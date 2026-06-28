@@ -1,82 +1,31 @@
 ---
-import business from '../../data/business.json';
-import Button from '../ui/Button.astro';
-import StarRating from '../ui/StarRating.astro';
-import BrandName from '../ui/BrandName.astro';
+// Hero — solo carrusel de imágenes
 ---
 
-<section class="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-cream via-warm-white to-amarillo/10">
-  <!-- Content -->
-  <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
-    <!-- Rating -->
-    <div class="mb-6 flex items-center justify-center gap-3">
-      <StarRating rating={business.rating} size="md" />
-      <span class="text-marron/60 text-sm font-medium">
-        {business.reviews_count} reseñas en Google Maps
-      </span>
-    </div>
-
-    <!-- Coffee Cup -->
-    <div class="mb-8 flex justify-center">
-      <div class="relative inline-flex items-center justify-center">
-        <!-- Steam -->
-        <div class="absolute -top-6 left-1/2 -translate-x-1/2 flex gap-1.5">
-          <div class="w-1.5 h-4 bg-marron/20 rounded-full animate-pulse" style="animation-delay:0s; animation-duration:2s;"></div>
-          <div class="w-1.5 h-6 bg-marron/15 rounded-full animate-pulse" style="animation-delay:0.3s; animation-duration:2.2s;"></div>
-          <div class="w-1.5 h-5 bg-marron/20 rounded-full animate-pulse" style="animation-delay:0.6s; animation-duration:1.8s;"></div>
-        </div>
-        <!-- Coffee cup SVG -->
-        <svg class="w-16 h-16 md:w-20 md:h-20 text-marron" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <!-- Cup body -->
-          <path d="M18 28 L18 48 C18 51.3 20.7 54 24 54 L40 54 C43.3 54 46 51.3 46 48 L46 28" fill="currentColor" fill-opacity="0.1"/>
-          <!-- Handle -->
-          <path d="M46 34 C52 34 54 40 54 42 C54 44 52 46 46 46" fill="none"/>
-          <!-- Coffee surface -->
-          <path d="M46 30 L46 34 C46 36 43 38 40 38 L24 38 C21 38 18 36 18 34 L18 30" fill="currentColor" fill-opacity="0.15"/>
-          <!-- Rim -->
-          <path d="M16 28 L18 28 L46 28 L48 28" stroke-width="2"/>
-        </svg>
-      </div>
-    </div>
-
-    <!-- Title -->
-    <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold mb-4 leading-tight font-serif">
-      <BrandName variant="dark" />
-    </h1>
-
-    <!-- Tagline -->
-    <p class="text-xl md:text-2xl text-marron/70 font-light mb-8 max-w-2xl mx-auto">
-      {business.tagline}
-    </p>
-
-    <!-- Category badge -->
-    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-marron/10 backdrop-blur-sm text-marron/80 text-sm mb-10 border border-marron/20">
-      <span class="w-2 h-2 rounded-full bg-amarillo"></span>
-      {business.category} · {business.price_range}
-    </div>
-
-    <!-- CTAs -->
-    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-      <Button href={`tel:${business.phone}`} variant="primary" size="lg">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-        </svg>
-        Llamar ahora
-      </Button>
-      <Button href={business.google_maps_url} variant="outline" size="lg" class="border-marron/40 text-marron hover:bg-marron hover:text-cream">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        Cómo llegar
-      </Button>
-    </div>
-  </div>
-
-  <!-- Scroll indicator -->
-  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-    <svg class="w-6 h-6 text-marron/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-    </svg>
+<section class="relative w-full h-screen overflow-hidden">
+  <div class="carousel-container absolute inset-0">
+    <img src="/images/google-photo-3.jpg" alt="" class="carousel-slide absolute inset-0 w-full h-full object-contain" />
+    <img src="/images/google-photo-10.jpg" alt="" class="carousel-slide absolute inset-0 w-full h-full object-contain" />
   </div>
 </section>
+
+<script>
+  const container = document.querySelector('.carousel-container');
+  if (container) {
+    const slides = container.querySelectorAll('.carousel-slide');
+    let current = 0;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.style.opacity = i === index ? '1' : '0';
+        slide.style.transition = 'opacity 1.2s ease-in-out';
+      });
+      current = index;
+    }
+
+    showSlide(0);
+    setInterval(() => {
+      showSlide((current + 1) % slides.length);
+    }, 4000);
+  }
+</script>
