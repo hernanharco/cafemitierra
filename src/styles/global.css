@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* ─── Color Palette: Colombian Coffee ─── */
+@theme {
+  --color-terracota: #C66F4E;
+  --color-terracota-light: #D48A6F;
+  --color-terracota-dark: #A85A3E;
+  --color-coffee: #3C1F1A;
+  --color-coffee-light: #5A3329;
+  --color-cream: #F5EDE3;
+  --color-cream-dark: #E8DCCC;
+  --color-gold: #D4A853;
+  --color-gold-light: #E0BE75;
+  --color-green-leaf: #5A7D4A;
+  --color-green-leaf-light: #7A9D6A;
+  --color-warm-white: #FEFCF9;
+}
+
+/* ─── Base Styles ─── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-warm-white);
+  color: var(--color-coffee);
+  overflow-x: hidden;
+}
+
+/* ─── Headings ─── */
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+}
+
+/* ─── Smooth Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-terracota);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-terracota-dark);
+}

@@ -1,0 +1,69 @@
+---
+import business from '../../data/business.json';
+import StarRating from '../ui/StarRating.astro';
+import ScrollReveal from '../effects/ScrollReveal.astro';
+---
+
+<section class="py-24 px-6 bg-cream">
+  <div class="max-w-4xl mx-auto">
+    <ScrollReveal>
+      <div class="text-center mb-12">
+        <span class="inline-block text-terracota font-semibold text-sm tracking-widest uppercase mb-4">
+          Reseñas
+        </span>
+        <h2 class="text-4xl md:text-5xl font-bold text-coffee mb-4">
+          Lo que dicen nuestros clientes
+        </h2>
+      </div>
+    </ScrollReveal>
+
+    <ScrollReveal delay={0.1}>
+      <!-- Aggregate rating card -->
+      <div class="bg-white rounded-2xl p-8 shadow-lg shadow-terracota/5 text-center mb-8">
+        <div class="flex items-center justify-center gap-4 mb-4">
+          <span class="text-5xl font-bold text-coffee">{business.rating}</span>
+          <div>
+            <StarRating rating={business.rating} size="lg" />
+            <p class="text-coffee/50 text-sm mt-1">
+              {business.reviews_count} reseñas en Google Maps
+            </p>
+          </div>
+        </div>
+        <a
+          href={business.google_maps_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 text-terracota hover:text-terracota-dark font-medium transition-colors mt-2"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+          </svg>
+          Ver en Google Maps
+        </a>
+      </div>
+    </ScrollReveal>
+
+    <!-- Review cards -->
+    <div class="space-y-4">
+      {business.reviews.map((review, i) => (
+        <ScrollReveal delay={0.2 + i * 0.1}>
+          <div class="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-terracota/20 flex items-center justify-center text-terracota font-bold text-lg">
+                  {review.author.charAt(0)}
+                </div>
+                <div>
+                  <p class="font-semibold text-coffee">{review.author}</p>
+                  <p class="text-coffee/40 text-xs">{review.source}</p>
+                </div>
+              </div>
+              <StarRating rating={review.rating} size="sm" showNumber={false} />
+            </div>
+            <p class="text-coffee/70 leading-relaxed">{review.text}</p>
+          </div>
+        </ScrollReveal>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,74 @@
+---
+export interface Props {
+  class?: string;
+  delay?: number;
+  direction?: 'up' | 'down' | 'left' | 'right' | 'none';
+}
+
+const { class: className = '', delay = 0, direction = 'up' } = Astro.props;
+---
+
+<div class={`scroll-reveal ${className}`} data-delay={delay} data-direction={direction}>
+  <slot />
+</div>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const directionToFrom = {
+    up: { y: 60 },
+    down: { y: -60 },
+    left: { x: -60 },
+    right: { x: 60 },
+    none: {},
+  };
+
+  const directionToTo = {
+    up: { y: 0 },
+    down: { y: 0 },
+    left: { x: 0 },
+    right: { x: 0 },
+    none: {},
+  };
+
+  const revealElements = document.querySelectorAll('.scroll-reveal');
+
+  revealElements.forEach((el) => {
+    const delay = parseFloat(el.dataset.delay || '0');
+    const direction = (el.dataset.direction || 'up') as keyof typeof directionToFrom;
+    const fromVars = {
+      opacity: 0,
+      ...directionToFrom[direction],
+    };
+    const toVars = {
+      opacity: 1,
+      ...directionToTo[direction],
+    };
+
+    // Set initial state immediately to prevent flash
+    gsap.set(el, fromVars);
+
+    // Animate when scrolled into view
+    gsap.to(el, {
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 85%',
+        toggleActions: 'play none none none',
+      },
+      ...toVars,
+      duration: 1,
+      delay,
+      ease: 'power3.out',
+    });
+  });
+</script>
+
+<style>
+  /* No opacity:0 — GSAP handles initial state with gsap.set() */
+  .scroll-reveal {
+    will-change: opacity, transform;
+  }
+</style>

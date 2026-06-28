@@ -1,0 +1,55 @@
+---
+import ScrollReveal from '../effects/ScrollReveal.astro';
+
+const galleryImages = [
+  { src: '/images/cafe-interior.jpg', alt: 'Interior acogedor de Café Mi Tierra', label: 'Ambiente' },
+  { src: '/images/coffee-cup.jpg', alt: 'Café colombiano recién preparado', label: 'Café' },
+  { src: '/images/bakery.jpg', alt: 'Pan artesanal colombiano', label: 'Panadería' },
+  { src: '/images/breakfast.jpg', alt: 'Desayuno completo', label: 'Desayunos' },
+  { src: '/images/brunch.jpg', alt: 'Brunch de fin de semana', label: 'Brunch' },
+  { src: '/images/about-coffee.jpg', alt: 'Granos de café colombiano', label: 'Origen' },
+];
+---
+
+<section class="py-24 px-6 bg-cream">
+  <div class="max-w-6xl mx-auto">
+    <ScrollReveal>
+      <div class="text-center mb-12">
+        <span class="inline-block text-terracota font-semibold text-sm tracking-widest uppercase mb-4">
+          Galería
+        </span>
+        <h2 class="text-4xl md:text-5xl font-bold text-coffee mb-4">
+          Un vistazo a nuestro espacio
+        </h2>
+        <p class="text-coffee/60 text-lg max-w-2xl mx-auto">
+          Así es Café Mi Tierra — un pedacito de Colombia en Avilés
+        </p>
+      </div>
+    </ScrollReveal>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      {galleryImages.map((img, i) => (
+        <ScrollReveal delay={i * 0.05} direction="up">
+          <div class={`group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-1 ${
+            i === 0 ? 'md:col-span-2 md:row-span-2' : ''
+          }`}>
+            <img
+              src={img.src}
+              alt={img.alt}
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              style={{ aspectRatio: i === 0 ? 'auto' : '1' }}
+              loading="lazy"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-coffee/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div class="absolute bottom-3 left-3">
+                <span class="inline-block px-2.5 py-1 rounded-full bg-cream/90 text-coffee text-xs font-medium">
+                  {img.label}
+                </span>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+      ))}
+    </div>
+  </div>
+</section>

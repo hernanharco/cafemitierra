@@ -1,0 +1,75 @@
+---
+import business from '../../data/business.json';
+import ScrollReveal from '../effects/ScrollReveal.astro';
+import MapEmbed from '../ui/MapEmbed.astro';
+
+const today = new Date().getDay();
+// Sunday=0, Monday=1, ... Saturday=6
+// Our hours array starts with Domingo (Sunday=0)
+const todayIndex = today;
+---
+
+<section class="py-24 px-6 bg-coffee">
+  <div class="max-w-6xl mx-auto">
+    <ScrollReveal>
+      <div class="text-center mb-16">
+        <span class="inline-block text-gold font-semibold text-sm tracking-widest uppercase mb-4">
+          Visítanos
+        </span>
+        <h2 class="text-4xl md:text-5xl font-bold text-cream mb-4">
+          Horarios y Ubicación
+        </h2>
+        <p class="text-cream/60 text-lg max-w-2xl mx-auto">
+          Te esperamos en el centro de Avilés
+        </p>
+      </div>
+    </ScrollReveal>
+
+    <div class="grid md:grid-cols-2 gap-12 items-start">
+      <!-- Hours -->
+      <ScrollReveal direction="left">
+        <div class="bg-cream/5 backdrop-blur-sm rounded-2xl p-8 border border-cream/10">
+          <h3 class="text-2xl font-bold text-cream mb-6 flex items-center gap-3">
+            <svg class="w-6 h-6 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Horario
+          </h3>
+          <div class="space-y-3">
+            {business.hours.map((h) => {
+              const isToday = business.hours.indexOf(h) === todayIndex;
+              return (
+                <div class={`flex items-center justify-between py-2 px-4 rounded-lg transition-colors ${isToday ? 'bg-gold/10 border border-gold/20' : 'hover:bg-cream/5'}`}>
+                  <span class={`font-medium ${isToday ? 'text-gold' : 'text-cream/80'}`}>
+                    {h.day}
+                    {isToday && <span class="ml-2 text-xs text-gold/70 font-normal">(Hoy)</span>}
+                  </span>
+                  <span class={`${isToday ? 'text-cream font-semibold' : 'text-cream/60'}`}>
+                    {h.hours}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </ScrollReveal>
+
+      <!-- Location -->
+      <ScrollReveal direction="right" delay={0.1}>
+        <div>
+          <div class="mb-6">
+            <h3 class="text-2xl font-bold text-cream mb-2 flex items-center gap-3">
+              <svg class="w-6 h-6 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Dirección
+            </h3>
+            <p class="text-cream/70 text-lg">{business.address.full}</p>
+          </div>
+          <MapEmbed />
+        </div>
+      </ScrollReveal>
+    </div>
+  </div>
+</section>
