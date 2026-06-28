@@ -30,9 +30,13 @@ const galleryImages = [
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
       {galleryImages.map((img, i) => (
         <ScrollReveal delay={i * 0.05} direction="up">
-          <div class={`group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-1 ${
-            i === 0 ? 'md:col-span-2 md:row-span-2' : ''
-          }`}>
+          <div
+            class={`group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-1 cursor-pointer ${
+              i === 0 ? 'md:col-span-2 md:row-span-2' : ''
+            }`}
+            data-lightbox={img.src}
+            onclick="openLightbox(this.dataset.lightbox)"
+          >
             <img
               src={img.src}
               alt={img.alt}
@@ -53,3 +57,43 @@ const galleryImages = [
     </div>
   </div>
 </section>
+
+<!-- Lightbox modal -->
+<div id="lightbox" class="fixed inset-0 z-[100] bg-marron/90 backdrop-blur-sm hidden items-center justify-center p-4" onclick="closeLightbox(event)">
+  <button class="absolute top-6 right-6 text-cream text-4xl hover:text-amarillo transition-colors z-10" onclick="closeLightbox(event)">&times;</button>
+  <img id="lightbox-img" src="" alt="" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" onclick="event.stopPropagation()" />
+</div>
+
+<script>
+  function openLightbox(src) {
+    const lightbox = document.getElementById('lightbox');
+    const img = document.getElementById('lightbox-img');
+    if (lightbox && img) {
+      img.src = src;
+      lightbox.classList.remove('hidden');
+      lightbox.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeLightbox(e) {
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox && e.target === lightbox || e.target.tagName === 'BUTTON') {
+      lightbox.classList.add('hidden');
+      lightbox.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+  }
+
+  // Cerrar con tecla Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const lightbox = document.getElementById('lightbox');
+      if (lightbox && !lightbox.classList.contains('hidden')) {
+        lightbox.classList.add('hidden');
+        lightbox.classList.remove('flex');
+        document.body.style.overflow = '';
+      }
+    }
+  });
+</script>
