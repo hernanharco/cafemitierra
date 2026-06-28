@@ -1,18 +1,21 @@
 @import "tailwindcss";
 
-/* ─── Color Palette: Colombian Coffee ─── */
+/* ─── Palette: Café Mi Tierra Brand ───
+ *   Colores exactos extraídos del logo oficial
+ * ─────────────────────────────────────── */
 @theme {
-  --color-terracota: #C66F4E;
-  --color-terracota-light: #D48A6F;
-  --color-terracota-dark: #A85A3E;
-  --color-coffee: #3C1F1A;
-  --color-coffee-light: #5A3329;
-  --color-cream: #F5EDE3;
-  --color-cream-dark: #E8DCCC;
-  --color-gold: #D4A853;
-  --color-gold-light: #E0BE75;
-  --color-green-leaf: #5A7D4A;
-  --color-green-leaf-light: #7A9D6A;
+  --color-marron: #4A312A;
+  --color-marron-light: #69453C;
+  --color-amarillo: #F2C84B;
+  --color-amarillo-light: #F5D87A;
+  --color-azul: #3565A7;
+  --color-azul-light: #5A85C0;
+  --color-azul-dark: #1E3D6B;
+  --color-rojo: #B53B3B;
+  --color-rojo-light: #D46060;
+  --color-rojo-dark: #8A2E2E;
+  --color-cream: #E0D3C4;
+  --color-cream-dark: #D4C4B0;
   --color-warm-white: #FEFCF9;
 }
 
@@ -24,7 +27,7 @@ html {
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--color-warm-white);
-  color: var(--color-coffee);
+  color: var(--color-marron);
   overflow-x: hidden;
 }
 
@@ -44,10 +47,10 @@ h1, h2, h3, h4 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-terracota);
+  background: var(--color-rojo);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-terracota-dark);
+  background: var(--color-rojo-dark);
 }
