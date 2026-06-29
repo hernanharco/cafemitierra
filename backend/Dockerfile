@@ -2,17 +2,20 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 
+# pnpm config para entorno controlado
+ENV COREPACK_ENABLE_STRICT=0
+ENV npm_config_minimum_release_age=0
+ENV npm_config_only_built_dependencies='[]'
+
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copiar monorepo
-COPY pnpm-lock.yaml package.json pnpm-workspace.yaml .npmrc ./
+# Copiar solo lo necesario
+COPY package.json pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/package.json
-
-# Instalar dependencias del backend
-RUN pnpm install --frozen-lockfile --filter backend
-
-# Copiar código del backend
 COPY backend/ ./backend/
+
+# Instalar dependencias
+RUN pnpm install --filter backend 2>&1
 
 EXPOSE 8001
 
