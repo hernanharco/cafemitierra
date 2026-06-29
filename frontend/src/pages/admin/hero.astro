@@ -1,0 +1,236 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Hero / Carrusel" currentPath={Astro.url.pathname}>
+  <!-- Imágenes del Carrusel -->
+  <div class="form-card">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold text-zinc-800">Imágenes del Carrusel</h2>
+      <button id="add-image-btn" class="btn-primary">➕ Agregar imagen</button>
+    </div>
+
+    <div id="carousel-grid" class="carousel-grid">
+      <p class="text-zinc-400 text-sm col-span-full">Cargando...</p>
+    </div>
+  </div>
+
+  <!-- Modal para subir imagen -->
+  <dialog id="upload-modal" class="modal">
+    <form id="upload-form" class="modal-form">
+      <div class="modal-header">
+        <h2>Agregar imagen al carrusel</h2>
+        <button type="button" class="modal-close" id="modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-zone" id="upload-zone">
+          <p class="text-sm text-zinc-500 text-center py-8">
+            📸 Arrastrá una imagen o hacé click para seleccionar
+          </p>
+          <img id="upload-preview" class="upload-preview hidden" />
+          <input type="file" id="file-input" accept="image/*" class="hidden" />
+        </div>
+        <div class="form-group">
+          <label for="img-alt">Texto alternativo</label>
+          <input type="text" id="img-alt" class="form-input" placeholder="Descripción de la imagen" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="modal-cancel-btn">Cancelar</button>
+        <button type="submit" class="btn-primary" id="upload-submit-btn">⬆️ Subir al carrusel</button>
+      </div>
+    </form>
+  </dialog>
+</AdminLayout>
+
+<script>
+  function getToken() {
+    const cookie = document.cookie;
+    console.log('[hero] cookies:', cookie);
+    const found = cookie.split('; ').find(r => r.startsWith('token='));
+    console.log('[hero] token found:', found);
+    return found?.split('=')[1];
+  }
+  async function api(path, opts = {}) {
+    const token = getToken();
+    const res = await fetch(path, {
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
+      credentials: 'include',
+      ...opts,
+    });
+    if (!res.ok) throw new Error(`Error: ${res.status}`);
+    return res.json();
+  }
+
+  // ── Cargar imágenes ─────────────────────────────────────────
+  async function loadImages() {
+    try {
+      const data = await api('/api/site');
+      renderImages(data.hero_images || []);
+    } catch (err) {
+      document.getElementById('carousel-grid').innerHTML = `<p class="text-red-500 text-sm col-span-full">Error: ${err.message}</p>`;
+    }
+  }
+
+  function renderImages(images) {
+    const grid = document.getElementById('carousel-grid');
+    if (images.length === 0) {
+      grid.innerHTML = '<p class="text-zinc-400 text-sm col-span-full">No hay imágenes en el carrusel. Agregá una.</p>';
+      return;
+    }
+    grid.innerHTML = images.map((img, i) => `
+      <div class="carousel-card" data-index="${i}">
+        <img src="${img.src}" alt="${img.alt || ''}" loading="lazy" />
+        <div class="carousel-overlay">
+          <span class="carousel-index">${i + 1}</span>
+          <button class="delete-img-btn" data-index="${i}" title="Eliminar">🗑️</button>
+        </div>
+        <p class="carousel-alt">${img.alt || 'Sin descripción'}</p>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.delete-img-btn').forEach(btn => {
+      btn.addEventListener('click', () => removeImage(Number(btn.dataset.index)));
+    });
+  }
+
+  // ── Eliminar imagen ──────────────────────────────────────────
+  let currentImages = [];
+
+  async function removeImage(index) {
+    if (!confirm('¿Eliminar esta imagen del carrusel?')) return;
+    const data = await api('/api/site');
+    const images = data.hero_images || [];
+    images.splice(index, 1);
+    currentImages = images;
+    await api('/api/site', { method: 'PUT', body: JSON.stringify({ hero_images: images }) });
+    renderImages(images);
+  }
+
+  // ── Subir imagen ─────────────────────────────────────────────
+  const uploadModal = document.getElementById('upload-modal');
+  const fileInput = document.getElementById('file-input');
+  const uploadZone = document.getElementById('upload-zone');
+  const uploadPreview = document.getElementById('upload-preview');
+  const submitBtn = document.getElementById('upload-submit-btn');
+
+  document.getElementById('add-image-btn').addEventListener('click', () => uploadModal.showModal());
+  document.getElementById('modal-close-btn').addEventListener('click', () => uploadModal.close());
+  document.getElementById('modal-cancel-btn').addEventListener('click', () => uploadModal.close());
+  uploadModal.addEventListener('click', (e) => { if (e.target === uploadModal) uploadModal.close(); });
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+  uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('dragover'); });
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      showPreview(e.dataTransfer.files[0]);
+    }
+  });
+  fileInput.addEventListener('change', () => { if (fileInput.files.length) showPreview(fileInput.files[0]); });
+
+  function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadPreview.src = e.target.result;
+      uploadPreview.classList.remove('hidden');
+      uploadZone.querySelector('p')?.classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById('upload-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!fileInput.files.length) { alert('Seleccioná una imagen'); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Subiendo...';
+
+    try {
+      // 1. Subir a Cloudinary via gallery upload
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('alt', document.getElementById('img-alt').value || 'Imagen del carrusel');
+      formData.append('folder', 'hero');
+
+      const token = getToken();
+      const uploadRes = await fetch('/api/gallery/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!uploadRes.ok) throw new Error('Error al subir imagen');
+      const uploaded = await uploadRes.json();
+
+      // 2. Agregar a hero_images en business.json
+      const siteData = await api('/api/site');
+      const heroImages = siteData.hero_images || [];
+      heroImages.push({
+        src: uploaded.imageUrl,
+        alt: document.getElementById('img-alt').value || 'Imagen del carrusel',
+      });
+
+      await api('/api/site', { method: 'PUT', body: JSON.stringify({ hero_images: heroImages }) });
+
+      // 3. Recargar
+      uploadModal.close();
+      loadImages();
+      resetUploadForm();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '⬆️ Subir al carrusel';
+    }
+  });
+
+  function resetUploadForm() {
+    fileInput.value = '';
+    uploadPreview.src = '';
+    uploadPreview.classList.add('hidden');
+    uploadZone.querySelector('p')?.classList.remove('hidden');
+    document.getElementById('img-alt').value = '';
+  }
+
+  // ── Init ──────────────────────────────────────────────────────
+  loadImages();
+</script>
+
+<style is:global>
+  @reference "tailwindcss";
+  .form-card { @apply bg-white rounded-xl border border-zinc-200 p-6; }
+  .form-group { @apply space-y-1; }
+  .form-group label { @apply block text-sm font-medium text-zinc-700; }
+  .form-input { @apply w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent; }
+  .btn-primary { @apply px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors cursor-pointer border-none font-medium text-sm disabled:opacity-50; }
+  .btn-secondary { @apply px-4 py-2 bg-zinc-100 text-zinc-700 rounded-lg hover:bg-zinc-200 transition-colors cursor-pointer border-none font-medium text-sm; }
+
+  /* Grid del carrusel */
+  .carousel-grid { @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4; }
+  .carousel-card { @apply relative bg-zinc-50 rounded-lg overflow-hidden border border-zinc-200; }
+  .carousel-card img { @apply w-full aspect-video object-cover; }
+  .carousel-overlay { @apply absolute top-2 left-2 right-2 flex justify-between opacity-0 transition-opacity; }
+  .carousel-card:hover .carousel-overlay { @apply opacity-100; }
+  .carousel-index { @apply bg-black/50 text-white text-xs px-2 py-0.5 rounded; }
+  .delete-img-btn { @apply bg-red-500/80 text-white text-xs p-1.5 rounded hover:bg-red-600 transition-colors cursor-pointer border-none; }
+  .carousel-alt { @apply text-xs text-zinc-500 px-2 py-1.5 truncate; }
+
+  /* Upload */
+  .upload-zone { @apply border-2 border-dashed border-zinc-300 rounded-xl p-8 text-center cursor-pointer hover:border-amber-400 transition-colors; }
+  .upload-zone.dragover { @apply border-amber-500 bg-amber-50; }
+  .upload-preview { @apply max-h-48 mx-auto rounded-lg; }
+  .hidden { @apply hidden; }
+
+  /* Modal */
+  .modal { @apply rounded-xl border-none shadow-2xl p-0 max-w-lg w-full; }
+  .modal::backdrop { @apply bg-black/50; }
+  .modal-header { @apply flex items-center justify-between px-6 py-4 border-b border-zinc-200; }
+  .modal-header h2 { @apply text-lg font-bold text-zinc-800; }
+  .modal-close { @apply p-1 hover:bg-zinc-100 rounded transition-colors cursor-pointer bg-transparent border-none text-zinc-500; }
+  .modal-body { @apply px-6 py-4 space-y-4; }
+  .modal-footer { @apply px-6 py-4 border-t border-zinc-200 flex justify-end gap-3; }
+</style>

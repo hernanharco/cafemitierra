@@ -1,0 +1,87 @@
+---
+export interface Props {
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+
+const navItems = [
+  { href: '/admin', label: 'Dashboard', icon: '📊' },
+  { href: '/admin/hero', label: 'Hero / Carrusel', icon: '🖼️' },
+  { href: '/admin/about', label: 'Nosotros', icon: '📝' },
+  { href: '/admin/services', label: 'Servicios', icon: '⚙️' },
+  { href: '/admin/schedule', label: 'Horarios', icon: '🕐' },
+  { href: '/admin/gallery', label: 'Galería', icon: '📸' },
+  { href: '/admin/reviews', label: 'Reseñas', icon: '⭐' },
+  { href: '/admin/info', label: 'Información / Contacto', icon: 'ℹ️' },
+  { href: '/admin/seo', label: 'SEO', icon: '🔍' },
+];
+
+function isActive(href: string) {
+  if (href === '/admin') return currentPath === '/admin';
+  return currentPath.startsWith(href);
+}
+---
+
+<aside class="admin-sidebar">
+  <div class="sidebar-header">
+    <a href="/admin" class="logo">
+      <span class="logo-icon">☕</span>
+      <div class="logo-text">
+        <span class="logo-title">Café Mi Tierra</span>
+        <span class="logo-subtitle">Panel Admin</span>
+      </div>
+    </a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul>
+      {navItems.map((item) => (
+        <li class:list={{ active: isActive(item.href) }}>
+          <a href={item.href}>
+            <span class="nav-icon">{item.icon}</span>
+            <span class="nav-label">{item.label}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="/" class="back-to-site" target="_blank">
+      <span>←</span>
+      <span>Ver sitio</span>
+    </a>
+    <button id="logout-btn" class="logout-btn">
+      <span>🚪</span>
+      <span>Cerrar sesión</span>
+    </button>
+  </div>
+</aside>
+
+<script>
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
+    document.cookie = 'token=; path=/; max-age=0';
+    window.location.href = '/admin/login';
+  });
+</script>
+
+<style is:global>
+  @reference "tailwindcss";
+  .admin-sidebar {
+    @apply fixed left-0 top-0 h-screen w-64 bg-zinc-900 text-zinc-100 flex flex-col z-40;
+  }
+  .sidebar-header { @apply px-4 py-5 border-b border-zinc-800; }
+  .logo { @apply flex items-center gap-3 no-underline; }
+  .logo-icon { @apply text-2xl; }
+  .logo-title { @apply block text-sm font-bold text-amber-400; }
+  .logo-subtitle { @apply block text-xs text-zinc-500; }
+  .sidebar-nav { @apply flex-1 overflow-y-auto py-4 px-3; }
+  .sidebar-nav ul { @apply space-y-1; }
+  .sidebar-nav li a { @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors no-underline; }
+  .sidebar-nav li.active a { @apply text-amber-400 bg-amber-400/10 font-medium; }
+  .nav-icon { @apply text-lg; }
+  .sidebar-footer { @apply border-t border-zinc-800 p-3 space-y-1; }
+  .back-to-site { @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors no-underline; }
+  .logout-btn { @apply w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors cursor-pointer bg-transparent border-none; }
+</style>

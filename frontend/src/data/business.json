@@ -1,0 +1,170 @@
+{
+  "name": "Café Mi Tierra",
+  "tagline": "Panadería y Cafetería con Esencia Colombiana",
+  "hero_images": [
+    {
+      "src": "/images/google-photo-3.jpg",
+      "alt": "Pan artesanal colombiano"
+    },
+    {
+      "src": "/images/google-photo-10.jpg",
+      "alt": "Brunch de fin de semana"
+    },
+    {
+      "src": "/images/buenuelos.png",
+      "alt": "Buñuelos colombianos"
+    },
+    {
+      "src": "https://res.cloudinary.com/dxyk76jhu/image/upload/v1782756583/cafemitierra/hero/iyprzsacfirpsry2ionj.jpg",
+      "alt": "Imagen del carrusel"
+    }
+  ],
+  "gallery_images": [
+    {
+      "src": "/images/google-photo-2.jpg",
+      "alt": "Interior acogedor de Café Mi Tierra",
+      "label": "Ambiente"
+    },
+    {
+      "src": "/images/google-photo-5.jpg",
+      "alt": "Café colombiano recién preparado",
+      "label": "Café"
+    },
+    {
+      "src": "/images/google-photo-3.jpg",
+      "alt": "Pan artesanal colombiano",
+      "label": "Panadería"
+    },
+    {
+      "src": "/images/google-photo-7.jpg",
+      "alt": "Desayuno completo",
+      "label": "Desayunos"
+    },
+    {
+      "src": "/images/google-photo-10.jpg",
+      "alt": "Brunch de fin de semana",
+      "label": "Brunch"
+    },
+    {
+      "src": "/images/google-photo-4.jpg",
+      "alt": "Granos de café colombiano",
+      "label": "Origen"
+    }
+  ],
+  "description": "En el corazón de Avilés, Café Mi Tierra trae el auténtico sabor de Colombia. Un espacio acogedor donde el aroma del café recién molido se mezcla con el calor de la panadería artesanal. Cada bocado y cada sorbo cuentan una historia de tradición y pasión.",
+  "category": "Panadería",
+  "rating": 4.3,
+  "reviews_count": 19,
+  "price_range": "10–20 €",
+  "address": {
+    "street": "C. del Prado, 24",
+    "city": "Avilés",
+    "province": "Asturias",
+    "postal_code": "33401",
+    "full": "C. del Prado, 24, 33401 Avilés, Asturias"
+  },
+  "coordinates": {
+    "lat": 43.5588763,
+    "lng": -5.9311915
+  },
+  "phone": "643 94 56 51",
+  "whatsapp": "34643945651",
+  "website": null,
+  "google_maps_url": "https://www.google.com/maps/place/Caf%C3%A9+Mi+Tierra/@43.5588763,-5.9311915,17z",
+  "instagram": null,
+  "hours": [
+    {
+      "day": "Domingo",
+      "hours": "10:00–20:00"
+    },
+    {
+      "day": "Lunes",
+      "hours": "9:30–21:00"
+    },
+    {
+      "day": "Martes",
+      "hours": "9:30–21:00"
+    },
+    {
+      "day": "Miércoles",
+      "hours": "9:30–21:00"
+    },
+    {
+      "day": "Jueves",
+      "hours": "9:30–21:00"
+    },
+    {
+      "day": "Viernes",
+      "hours": "10:00–22:00"
+    },
+    {
+      "day": "Sábado",
+      "hours": "8:00–22:00"
+    }
+  ],
+  "features": [
+    "Amigable con la comunidad LGBTQ+",
+    "Especialidad en café colombiano",
+    "Panadería artesanal",
+    "Desayunos y brunch",
+    "Productos para llevar",
+    "probando"
+  ],
+  "services_title": "Nuestros Servicios",
+  "services_subtitle": "Lo que ofrecemos",
+  "services_description": "Cada producto está hecho con amor y los mejores ingredientes",
+  "services": [
+    {
+      "title": "Café Colombiano",
+      "description": "Café de origen 100% colombiano, preparado con métodos tradicionales.",
+      "icon": "☕",
+      "image": "/images/google-photo-5.jpg"
+    },
+    {
+      "title": "Panadería Artesanal",
+      "description": "Pan horneado diariamente con recetas tradicionales colombianas.",
+      "icon": "🥖",
+      "image": "/images/google-photo-3.jpg"
+    },
+    {
+      "title": "Desayunos",
+      "description": "Desayunos completos para empezar el día con energía.",
+      "icon": "🍳",
+      "image": "/images/google-photo-7.jpg"
+    },
+    {
+      "title": "Brunch",
+      "description": "Brunch los fines de semana con lo mejor de la cocina colombiana.",
+      "icon": "🥂",
+      "image": "/images/google-photo-10.jpg"
+    }
+  ],
+  "reviews": [
+    {
+      "author": "Google Maps",
+      "rating": 4.3,
+      "text": "Un rincón colombiano en Avilés. El café es espectacular y la atención inmejorable.",
+      "source": "Google Maps",
+      "visible": true
+    },
+    {
+      "author": "María",
+      "rating": 5,
+      "text": "El mejor café de Avilés!",
+      "source": "web",
+      "visible": false
+    }
+  ],
+  "about": {
+    "title": "Nuestra Historia",
+    "subtitle": "Un pedacito de Colombia en Avilés",
+    "image": "/images/google-photo-1.jpg",
+    "imageAlt": "Interior de Café Mi Tierra",
+    "badge": "☕ Café colombiano de origen"
+  },
+  "seo": {
+    "title": "Café Mi Tierra | Panadería y Cafetería Colombiana en Avilés",
+    "description": "Café Mi Tierra, panadería y cafetería con esencia colombiana en Avilés, Asturias. Café de origen, pan artesanal y desayunos. ¡Visítanos!",
+    "keywords": "café, panadería, Colombia, Avilés, Asturias, café colombiano, pan artesanal"
+  }
+}

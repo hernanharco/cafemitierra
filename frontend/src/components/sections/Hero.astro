@@ -1,0 +1,38 @@
+---
+import business from '../../data/business.json';
+
+const heroImages = business.hero_images || [
+  { src: '/images/google-photo-3.jpg', alt: 'Pan artesanal colombiano' },
+  { src: '/images/google-photo-10.jpg', alt: 'Brunch de fin de semana' },
+  { src: '/images/buenuelos.png', alt: 'Buñuelos colombianos' },
+];
+---
+
+<section class="relative w-full h-screen overflow-hidden">
+  <div class="carousel-container absolute inset-0">
+    {heroImages.map((img) => (
+      <img src={img.src} alt={img.alt} class="carousel-slide absolute inset-0 w-full h-full object-contain" />
+    ))}
+  </div>
+</section>
+
+<script>
+  const container = document.querySelector('.carousel-container');
+  if (container) {
+    const slides = container.querySelectorAll('.carousel-slide');
+    let current = 0;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.style.opacity = i === index ? '1' : '0';
+        slide.style.transition = 'opacity 1.2s ease-in-out';
+      });
+      current = index;
+    }
+
+    showSlide(0);
+    setInterval(() => {
+      showSlide((current + 1) % slides.length);
+    }, 4000);
+  }
+</script>

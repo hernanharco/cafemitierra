@@ -1,0 +1,159 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Información" currentPath={Astro.url.pathname}>
+  <div class="form-card max-w-2xl">
+    <form id="info-form" class="space-y-4">
+      <h3 class="text-base font-bold text-zinc-700 border-b border-zinc-200 pb-2">Contacto</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="form-group">
+          <label for="info-phone">Teléfono</label>
+          <input type="text" id="info-phone" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="info-whatsapp">WhatsApp (solo números, con código país)</label>
+          <input type="text" id="info-whatsapp" class="form-input" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="form-group">
+          <label for="info-instagram">Instagram (URL o usuario)</label>
+          <input type="text" id="info-instagram" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="info-website">Sitio web</label>
+          <input type="url" id="info-website" class="form-input" />
+        </div>
+      </div>
+
+      <h3 class="text-base font-bold text-zinc-700 border-b border-zinc-200 pb-2 pt-2">Dirección</h3>
+      <div class="form-group">
+        <label for="info-street">Calle</label>
+        <input type="text" id="info-street" class="form-input" />
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="form-group">
+          <label for="info-city">Ciudad</label>
+          <input type="text" id="info-city" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="info-province">Provincia</label>
+          <input type="text" id="info-province" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="info-postal">Código Postal</label>
+          <input type="text" id="info-postal" class="form-input" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="info-address-full">Dirección completa</label>
+        <input type="text" id="info-address-full" class="form-input" />
+      </div>
+
+      <h3 class="text-base font-bold text-zinc-700 border-b border-zinc-200 pb-2 pt-2">Coordenadas</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="form-group">
+          <label for="info-lat">Latitud</label>
+          <input type="text" id="info-lat" class="form-input" step="any" />
+        </div>
+        <div class="form-group">
+          <label for="info-lng">Longitud</label>
+          <input type="text" id="info-lng" class="form-input" step="any" />
+        </div>
+      </div>
+
+      <h3 class="text-base font-bold text-zinc-700 border-b border-zinc-200 pb-2 pt-2">Google Maps</h3>
+      <div class="form-group">
+        <label for="info-maps-url">URL de Google Maps</label>
+        <input type="url" id="info-maps-url" class="form-input" />
+      </div>
+
+      <div class="flex gap-3 items-center pt-4">
+        <button type="submit" class="btn-primary" id="info-save-btn">💾 Guardar</button>
+        <span id="info-status" class="text-sm text-zinc-400"></span>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script>
+  function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
+  async function api(path, opts = {}) {
+    const token = getToken();
+    const res = await fetch(path, {
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
+      ...opts,
+    });
+    if (!res.ok) throw new Error(`Error: ${res.status}`);
+    return res.json();
+  }
+
+  async function load() {
+    try {
+      const data = await api('/api/site');
+      document.getElementById('info-phone').value = data.phone || '';
+      document.getElementById('info-whatsapp').value = data.whatsapp || '';
+      document.getElementById('info-instagram').value = data.instagram || '';
+      document.getElementById('info-website').value = data.website || '';
+      document.getElementById('info-street').value = data.address?.street || '';
+      document.getElementById('info-city').value = data.address?.city || '';
+      document.getElementById('info-province').value = data.address?.province || '';
+      document.getElementById('info-postal').value = data.address?.postal_code || '';
+      document.getElementById('info-address-full').value = data.address?.full || '';
+      document.getElementById('info-lat').value = data.coordinates?.lat ?? '';
+      document.getElementById('info-lng').value = data.coordinates?.lng ?? '';
+      document.getElementById('info-maps-url').value = data.google_maps_url || '';
+    } catch (err) {
+      document.getElementById('info-status').textContent = 'Error: ' + err.message;
+    }
+  }
+
+  document.getElementById('info-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = document.getElementById('info-status');
+    const btn = document.getElementById('info-save-btn');
+    btn.disabled = true;
+    status.textContent = 'Guardando...';
+    try {
+      await api('/api/site', {
+        method: 'PUT',
+        body: JSON.stringify({
+          phone: document.getElementById('info-phone').value,
+          whatsapp: document.getElementById('info-whatsapp').value,
+          instagram: document.getElementById('info-instagram').value,
+          website: document.getElementById('info-website').value,
+          address: {
+            street: document.getElementById('info-street').value,
+            city: document.getElementById('info-city').value,
+            province: document.getElementById('info-province').value,
+            postal_code: document.getElementById('info-postal').value,
+            full: document.getElementById('info-address-full').value,
+          },
+          coordinates: {
+            lat: Number(document.getElementById('info-lat').value) || 0,
+            lng: Number(document.getElementById('info-lng').value) || 0,
+          },
+          google_maps_url: document.getElementById('info-maps-url').value,
+        }),
+      });
+      status.textContent = '✅ Guardado';
+    } catch (err) {
+      status.textContent = 'Error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  load();
+</script>
+
+<style is:global>
+  @reference "tailwindcss";
+  .form-card { @apply bg-white rounded-xl border border-zinc-200 p-6; }
+  .form-group { @apply space-y-1; }
+  .form-group label { @apply block text-sm font-medium text-zinc-700; }
+  .form-input { @apply w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent; }
+  .btn-primary { @apply px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors cursor-pointer border-none font-medium text-sm disabled:opacity-50; }
+</style>
