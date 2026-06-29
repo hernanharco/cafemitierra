@@ -4,12 +4,12 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copiar package.json de la raíz y del backend
-COPY package.json pnpm-workspace.yaml ./
+# Copiar monorepo
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/package.json
 
-# Instalar dependencias (sin lockfile para evitar policy checks)
-RUN pnpm install --filter backend
+# Instalar dependencias del backend
+RUN pnpm install --frozen-lockfile --filter backend
 
 # Copiar código del backend
 COPY backend/ ./backend/
