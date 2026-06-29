@@ -1,19 +1,22 @@
-FROM node:22-alpine
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copiar dependencias primero (caching)
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+# Copiar monorepo (contexto = raíz del proyecto)
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
+COPY backend/package.json ./backend/package.json
 
-# Copiar código fuente
-COPY . .
+# Instalar solo las dependencias del backend
+RUN pnpm install --frozen-lockfile --filter backend
+
+# Copiar código del backend
+COPY backend/ ./backend/
 
 EXPOSE 8001
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8001/api/health || exit 1
 
-CMD ["pnpm", "start"]
+CMD ["pnpm", "--filter", "backend", "start"]
