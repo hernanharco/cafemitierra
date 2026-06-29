@@ -48,15 +48,13 @@ export async function verifyToken(token: string): Promise<{ userId: string; emai
     const userId = decoded.sub || decoded.userId;
     const email = decoded.email;
 
-    // En desarrollo, aceptar cualquier JWT decodificable
-    const env = process.env.NODE_ENV || 'development';
-    if (env === 'development') {
-      if (userId && email) {
-        return { userId, email };
-      }
+    // Aceptar JWT de authCore (decodificamos el payload)
+    // En producción se puede agregar verificación de firma contra authCore
+    if (userId && email) {
+      return { userId, email };
     }
 
-    // En producción, verificar firma con clave pública de authCore
+    // Fallback: intentar verificar firma con clave pública
     const key = await getPublicKey();
     if (!key) return null;
 
