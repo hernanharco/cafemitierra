@@ -1,0 +1,226 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Galería" currentPath={Astro.url.pathname}>
+  <div class="toolbar">
+    <button id="upload-btn" class="btn-primary">📸 Subir Imagen</button>
+  </div>
+
+  <div id="gallery-grid" class="gallery-grid">
+    <p class="text-zinc-400 text-center py-12 col-span-full">Cargando...</p>
+  </div>
+
+  <!-- Modal: Subir imagen -->
+  <dialog id="upload-modal" class="modal">
+    <form id="upload-form" class="modal-form">
+      <div class="modal-header">
+        <h2>Subir Imagen a la Galería</h2>
+        <button type="button" class="modal-close" id="upload-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-zone" id="upload-zone">
+          <div class="upload-placeholder">
+            <span class="upload-icon">📸</span>
+            <p class="upload-text">Arrastrá una imagen o hacé click para seleccionar</p>
+          </div>
+          <img id="upload-preview" class="upload-preview hidden" />
+          <input type="file" id="file-input" accept="image/*" class="hidden" />
+        </div>
+        <div class="form-group">
+          <label for="img-label">Etiqueta</label>
+          <input type="text" id="img-label" class="form-input" placeholder="Ambiente, Café, Panadería..." />
+        </div>
+        <div class="form-group">
+          <label for="img-alt">Texto alternativo</label>
+          <input type="text" id="img-alt" class="form-input" placeholder="Descripción de la imagen" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="upload-cancel-btn">Cancelar</button>
+        <button type="submit" class="btn-primary" id="upload-submit-btn">⬆️ Subir</button>
+      </div>
+    </form>
+  </dialog>
+</AdminLayout>
+
+<script>
+  function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
+  async function api(path, opts = {}) {
+    const token = getToken();
+    const res = await fetch(path, {
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
+      credentials: 'include',
+      ...opts,
+    });
+    if (!res.ok) throw new Error(`Error: ${res.status}`);
+    return res.json();
+  }
+
+  // ── Cargar galería ────────────────────────────────────────────
+  async function loadGallery() {
+    const grid = document.getElementById('gallery-grid');
+    try {
+      const data = await api('/api/site');
+      const images = data.gallery_images || [];
+
+      if (images.length === 0) {
+        grid.innerHTML = '<p class="text-zinc-400 text-center py-12 col-span-full">No hay imágenes aún</p>';
+        return;
+      }
+
+      grid.innerHTML = images.map((img, i) => `
+        <div class="gallery-card" data-index="${i}">
+          <div class="gallery-img-wrapper">
+            <img src="${img.src}" alt="${img.alt || ''}" loading="lazy" />
+          </div>
+          <div class="gallery-info">
+            <div>
+              <p class="gallery-title">${img.label || 'Sin etiqueta'}</p>
+              <p class="gallery-alt">${img.alt || ''}</p>
+            </div>
+            <button class="btn-icon delete-btn" data-index="${i}" title="Eliminar">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+
+      grid.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteImage(Number(btn.dataset.index)));
+      });
+    } catch (err) {
+      grid.innerHTML = `<p class="text-red-500 text-center py-12 col-span-full">Error: ${err.message}</p>`;
+    }
+  }
+
+  // ── Subir imagen ──────────────────────────────────────────────
+  const uploadModal = document.getElementById('upload-modal');
+  const fileInput = document.getElementById('file-input');
+  const uploadZone = document.getElementById('upload-zone');
+  const uploadPreview = document.getElementById('upload-preview');
+  const submitBtn = document.getElementById('upload-submit-btn');
+
+  document.getElementById('upload-btn').addEventListener('click', () => uploadModal.showModal());
+  document.getElementById('upload-close-btn').addEventListener('click', () => uploadModal.close());
+  document.getElementById('upload-cancel-btn').addEventListener('click', () => uploadModal.close());
+  uploadModal.addEventListener('click', (e) => { if (e.target === uploadModal) uploadModal.close(); });
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+  uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('dragover'); });
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault(); uploadZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      showPreview(e.dataTransfer.files[0]);
+    }
+  });
+  fileInput.addEventListener('change', () => { if (fileInput.files.length) showPreview(fileInput.files[0]); });
+
+  function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadPreview.src = e.target.result;
+      uploadPreview.classList.remove('hidden');
+      uploadZone.querySelector('.upload-placeholder')?.classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById('upload-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!fileInput.files.length) { alert('Seleccioná una imagen'); return; }
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Subiendo...';
+    try {
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('alt', document.getElementById('img-alt').value || '');
+      formData.append('folder', 'gallery');
+
+      const token = getToken();
+      const res = await fetch('/api/gallery/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Error al subir');
+      const uploaded = await res.json();
+
+      // Agregar a gallery_images en business.json
+      const data = await api('/api/site');
+      const images = data.gallery_images || [];
+      images.push({
+        src: uploaded.imageUrl,
+        alt: document.getElementById('img-alt').value || '',
+        label: document.getElementById('img-label').value || '',
+      });
+      await api('/api/site', { method: 'PUT', body: JSON.stringify({ gallery_images: images }) });
+
+      uploadModal.close();
+      loadGallery();
+      resetForm();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '⬆️ Subir';
+    }
+  });
+
+  function resetForm() {
+    fileInput.value = '';
+    uploadPreview.src = '';
+    uploadPreview.classList.add('hidden');
+    uploadZone.querySelector('.upload-placeholder')?.classList.remove('hidden');
+    document.getElementById('img-label').value = '';
+    document.getElementById('img-alt').value = '';
+  }
+
+  // ── Eliminar imagen ───────────────────────────────────────────
+  async function deleteImage(index) {
+    if (!confirm('¿Eliminar esta imagen de la galería?')) return;
+    try {
+      const data = await api('/api/site');
+      const images = data.gallery_images || [];
+      images.splice(index, 1);
+      await api('/api/site', { method: 'PUT', body: JSON.stringify({ gallery_images: images }) });
+      loadGallery();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  loadGallery();
+</script>
+
+<style is:global>
+  @reference "tailwindcss";
+  .toolbar { @apply mb-6; }
+  .btn-primary { @apply px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors cursor-pointer border-none font-medium text-sm disabled:opacity-50; }
+  .btn-secondary { @apply px-4 py-2 bg-zinc-100 text-zinc-700 rounded-lg hover:bg-zinc-200 transition-colors cursor-pointer border-none font-medium text-sm; }
+  .gallery-grid { @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4; }
+  .gallery-card { @apply bg-white rounded-xl border border-zinc-200 overflow-hidden hover:shadow-md transition-shadow; }
+  .gallery-img-wrapper { @apply relative aspect-[4/3] overflow-hidden bg-zinc-100; }
+  .gallery-img-wrapper img { @apply w-full h-full object-cover; }
+  .gallery-info { @apply p-3 flex items-center justify-between gap-2; }
+  .gallery-title { @apply text-sm font-medium text-zinc-700 truncate; }
+  .gallery-alt { @apply text-xs text-zinc-400 truncate; }
+  .btn-icon { @apply p-1.5 rounded hover:bg-zinc-100 transition-colors cursor-pointer bg-transparent border-none text-sm shrink-0; }
+  .upload-zone { @apply border-2 border-dashed border-zinc-300 rounded-xl p-8 text-center cursor-pointer hover:border-amber-400 transition-colors; }
+  .upload-zone.dragover { @apply border-amber-500 bg-amber-50; }
+  .upload-icon { @apply text-4xl block mb-2; }
+  .upload-text { @apply text-sm text-zinc-600; }
+  .upload-preview { @apply max-h-48 mx-auto rounded-lg; }
+  .hidden { @apply hidden; }
+  .modal { @apply rounded-xl border-none shadow-2xl p-0 max-w-lg w-full; }
+  .modal::backdrop { @apply bg-black/50; }
+  .modal-header { @apply flex items-center justify-between px-6 py-4 border-b border-zinc-200; }
+  .modal-header h2 { @apply text-lg font-bold text-zinc-800; }
+  .modal-close { @apply p-1 hover:bg-zinc-100 rounded transition-colors cursor-pointer bg-transparent border-none text-zinc-500; }
+  .modal-body { @apply px-6 py-4 space-y-4; }
+  .modal-footer { @apply px-6 py-4 border-t border-zinc-200 flex justify-end gap-3; }
+  .form-group { @apply space-y-1; }
+  .form-group label { @apply block text-sm font-medium text-zinc-700; }
+  .form-input { @apply w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent; }
+</style>

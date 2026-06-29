@@ -1,0 +1,34 @@
+{
+  "name": "@cafemitierra/backend",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.0.6",
+    "@hono/zod-validator": "^0.8.0",
+    "cloudinary": "^2.10.0",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.27",
+    "pg": "^8.14.0",
+    "zod": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.11.0",
+    "drizzle-kit": "^0.31.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  }
+}

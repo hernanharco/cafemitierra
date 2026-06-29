@@ -1,0 +1,235 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Nosotros" currentPath={Astro.url.pathname}>
+  <div class="form-card max-w-2xl">
+    <form id="about-form" class="space-y-4">
+      <div class="form-group">
+        <label for="about-title">Título de la sección</label>
+        <input type="text" id="about-title" class="form-input" placeholder="Nuestra Historia" />
+      </div>
+      <div class="form-group">
+        <label for="about-subtitle">Subtítulo</label>
+        <input type="text" id="about-subtitle" class="form-input" placeholder="Un pedacito de Colombia en Avilés" />
+      </div>
+      <div class="form-group">
+        <label for="about-description">Descripción</label>
+        <textarea id="about-description" class="form-input" rows="6" placeholder="Texto sobre el negocio..."></textarea>
+      </div>
+
+      <!-- Imagen -->
+      <div class="form-group">
+        <label>Imagen de la sección</label>
+        <div id="image-preview" class="image-preview">
+          <img id="about-image-show" src="" alt="" class="hidden max-h-48 rounded-lg" />
+          <p id="about-image-placeholder" class="text-sm text-zinc-400">Sin imagen</p>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button type="button" class="btn-secondary" id="change-image-btn">🖼️ Cambiar imagen</button>
+        </div>
+        <input type="hidden" id="about-image" />
+        <input type="hidden" id="about-image-alt" />
+      </div>
+
+      <div class="form-group">
+        <label for="about-badge">Texto del badge (sello sobre la imagen)</label>
+        <input type="text" id="about-badge" class="form-input" placeholder="☕ Café colombiano de origen" />
+      </div>
+
+      <div class="form-group">
+        <label>Características (features)</label>
+        <p class="text-xs text-zinc-400 mb-2">Una por línea</p>
+        <textarea id="about-features" class="form-input" rows="5" placeholder="Amigable con la comunidad LGBTQ+&#10;Especialidad en café colombiano&#10;..."></textarea>
+      </div>
+
+      <div class="flex gap-3 items-center pt-4">
+        <button type="submit" class="btn-primary" id="about-save-btn">💾 Guardar</button>
+        <span id="about-status" class="text-sm text-zinc-400"></span>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal subir imagen -->
+  <dialog id="image-modal" class="modal">
+    <form id="image-upload-form" class="modal-form">
+      <div class="modal-header">
+        <h2>Subir imagen para Nosotros</h2>
+        <button type="button" class="modal-close" id="modal-close-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-zone" id="upload-zone">
+          <p class="text-sm text-zinc-500 text-center py-8">📸 Arrastrá una imagen o hacé click</p>
+          <img id="upload-preview" class="upload-preview hidden" />
+          <input type="file" id="file-input" accept="image/*" class="hidden" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="modal-cancel-btn">Cancelar</button>
+        <button type="submit" class="btn-primary">⬆️ Subir imagen</button>
+      </div>
+    </form>
+  </dialog>
+</AdminLayout>
+
+<script>
+  function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
+  async function api(path, opts = {}) {
+    const token = getToken();
+    const res = await fetch(path, {
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
+      credentials: 'include',
+      ...opts,
+    });
+    if (!res.ok) throw new Error(`Error: ${res.status}`);
+    return res.json();
+  }
+
+  async function load() {
+    try {
+      const data = await api('/api/site');
+      document.getElementById('about-title').value = data.about?.title || '';
+      document.getElementById('about-subtitle').value = data.about?.subtitle || '';
+      document.getElementById('about-description').value = data.description || '';
+      document.getElementById('about-features').value = (data.features || []).join('\n');
+      document.getElementById('about-badge').value = data.about?.badge || '';
+      const img = data.about?.image;
+      if (img) {
+        document.getElementById('about-image').value = img;
+        const show = document.getElementById('about-image-show');
+        show.src = img;
+        show.classList.remove('hidden');
+        document.getElementById('about-image-placeholder').classList.add('hidden');
+      }
+    } catch (err) {
+      document.getElementById('about-status').textContent = 'Error: ' + err.message;
+    }
+  }
+
+  // ── Guardar ──────────────────────────────────────────────────
+  document.getElementById('about-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = document.getElementById('about-status');
+    const btn = document.getElementById('about-save-btn');
+    btn.disabled = true;
+    status.textContent = 'Guardando...';
+    try {
+      const features = document.getElementById('about-features').value
+        .split('\n').map(s => s.trim()).filter(Boolean);
+      await api('/api/site', {
+        method: 'PUT',
+        body: JSON.stringify({
+          description: document.getElementById('about-description').value,
+          features,
+          about: {
+            title: document.getElementById('about-title').value,
+            subtitle: document.getElementById('about-subtitle').value,
+            image: document.getElementById('about-image').value || null,
+            badge: document.getElementById('about-badge').value,
+          },
+        }),
+      });
+      status.textContent = '✅ Guardado';
+      setTimeout(() => status.textContent = '', 3000);
+    } catch (err) {
+      status.textContent = 'Error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // ── Subir imagen ────────────────────────────────────────────
+  const modal = document.getElementById('image-modal');
+  const fileInput = document.getElementById('file-input');
+  const uploadZone = document.getElementById('upload-zone');
+  const uploadPreview = document.getElementById('upload-preview');
+
+  document.getElementById('change-image-btn').addEventListener('click', () => modal.showModal());
+  document.getElementById('modal-close-btn').addEventListener('click', () => modal.close());
+  document.getElementById('modal-cancel-btn').addEventListener('click', () => modal.close());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+  uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('dragover'); });
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault(); uploadZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      showPreview(e.dataTransfer.files[0]);
+    }
+  });
+  fileInput.addEventListener('change', () => { if (fileInput.files.length) showPreview(fileInput.files[0]); });
+
+  function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadPreview.src = e.target.result;
+      uploadPreview.classList.remove('hidden');
+      uploadZone.querySelector('p')?.classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById('image-upload-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!fileInput.files.length) { alert('Seleccioná una imagen'); return; }
+    try {
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      formData.append('folder', 'gallery');
+      const token = getToken();
+      const res = await fetch('/api/gallery/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Error al subir');
+      const uploaded = await res.json();
+
+      // Mostrar la imagen en el preview
+      document.getElementById('about-image').value = uploaded.imageUrl;
+      const show = document.getElementById('about-image-show');
+      show.src = uploaded.imageUrl;
+      show.classList.remove('hidden');
+      document.getElementById('about-image-placeholder').classList.add('hidden');
+
+      modal.close();
+      resetUpload();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  });
+
+  function resetUpload() {
+    fileInput.value = '';
+    uploadPreview.src = '';
+    uploadPreview.classList.add('hidden');
+    uploadZone.querySelector('p')?.classList.remove('hidden');
+  }
+
+  load();
+</script>
+
+<style is:global>
+  @reference "tailwindcss";
+  .form-card { @apply bg-white rounded-xl border border-zinc-200 p-6; }
+  .form-group { @apply space-y-1; }
+  .form-group label { @apply block text-sm font-medium text-zinc-700; }
+  .form-input { @apply w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent; }
+  .btn-primary { @apply px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors cursor-pointer border-none font-medium text-sm disabled:opacity-50; }
+  .btn-secondary { @apply px-4 py-2 bg-zinc-100 text-zinc-700 rounded-lg hover:bg-zinc-200 transition-colors cursor-pointer border-none font-medium text-sm; }
+  .image-preview { @apply bg-zinc-50 rounded-lg p-4 text-center border border-zinc-200; }
+  .upload-zone { @apply border-2 border-dashed border-zinc-300 rounded-xl p-8 text-center cursor-pointer hover:border-amber-400 transition-colors; }
+  .upload-zone.dragover { @apply border-amber-500 bg-amber-50; }
+  .upload-preview { @apply max-h-48 mx-auto rounded-lg; }
+  .hidden { @apply hidden; }
+  .modal { @apply rounded-xl border-none shadow-2xl p-0 max-w-lg w-full; }
+  .modal::backdrop { @apply bg-black/50; }
+  .modal-header { @apply flex items-center justify-between px-6 py-4 border-b border-zinc-200; }
+  .modal-header h2 { @apply text-lg font-bold text-zinc-800; }
+  .modal-close { @apply p-1 hover:bg-zinc-100 rounded transition-colors cursor-pointer bg-transparent border-none text-zinc-500; }
+  .modal-body { @apply px-6 py-4; }
+  .modal-footer { @apply px-6 py-4 border-t border-zinc-200 flex justify-end gap-3; }
+</style>

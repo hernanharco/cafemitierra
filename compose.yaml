@@ -1,0 +1,104 @@
+# ============================================================
+# compose.yaml — CafeMiTierra (entorno de desarrollo)
+# ============================================================
+# Red compartida: se conecta con authCore vía elrincondeharco_net
+# Crear la red ANTES de levantar:
+#   docker network create elrincondeharco_net
+# ============================================================
+
+services:
+  # ── Base de datos ────────────────────────────────────────────
+  cafemitierra-db:
+    image: postgres:16-alpine
+    container_name: cafemitierra-dev-db
+    restart: unless-stopped
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: cafemitierra
+      POSTGRES_USER: cafemitierra
+      POSTGRES_PASSWORD: cafemitierra_dev
+    volumes:
+      - cafemitierra_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cafemitierra"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+    networks:
+      - elrincondeharco_net
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+
+  # ── Backend Hono ────────────────────────────────────────────
+  cafemitierra-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cafemitierra-dev-backend
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: "postgres://cafemitierra:cafemitierra_dev@cafemitierra-db:5432/cafemitierra"
+      NODE_ENV: development
+      CORS_ORIGINS: '["http://localhost:4321", "http://localhost:4322", "http://localhost:4323"]'
+    volumes:
+      - ./backend/src:/app/src
+      - /app/node_modules
+    depends_on:
+      cafemitierra-db:
+        condition: service_healthy
+    networks:
+      - elrincondeharco_net
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+
+  # ── Frontend Astro ──────────────────────────────────────────
+  cafemitierra-web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cafemitierra-dev-frontend
+    command: ["pnpm", "dev"]
+    restart: unless-stopped
+    ports:
+      - "4322:4321"
+    environment:
+      PUBLIC_BACKEND_URL: "http://localhost:8001"
+      API_TARGET: "http://cafemitierra-api:8001"
+      HOST: "0.0.0.0"
+      PORT: "4321"
+      NODE_ENV: development
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/astro.config.mjs:/app/astro.config.mjs
+      - /app/node_modules
+    depends_on:
+      - cafemitierra-api
+    networks:
+      - elrincondeharco_net
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: "1.0"
+
+# ── Volúmenes persistentes ────────────────────────────────────
+volumes:
+  cafemitierra_pgdata:
+
+# ── Red compartida ───────────────────────────────────────────
+networks:
+  elrincondeharco_net:
+    external: true
+    name: elrincondeharco_net

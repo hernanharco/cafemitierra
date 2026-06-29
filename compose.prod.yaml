@@ -1,0 +1,55 @@
+# ============================================================
+# compose.prod.yaml — Producción en Hetzner
+# ============================================================
+# Usar con: docker compose -f compose.prod.yaml up -d --build
+# ============================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: cafemitierra
+      POSTGRES_USER: cafemitierra
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cafemitierra"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      NODE_ENV: production
+      PORT: 8001
+      DATABASE_URL: postgres://cafemitierra:${DB_PASSWORD}@postgres:5432/cafemitierra
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+
+volumes:
+  pgdata:

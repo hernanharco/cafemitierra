@@ -1,0 +1,6 @@
+---
+export const prerender = false;
+const redirect = Astro.url.origin + '/admin';
+const script = `window.location.href = '${redirect}';`;
+---
+<html><head><meta charset="UTF-8"><title>Redirigiendo...</title><script>{script}</script></head><body><p><a href={redirect}>Ir al Dashboard</a></p></body></html>

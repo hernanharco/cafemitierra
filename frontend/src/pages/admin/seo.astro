@@ -1,0 +1,86 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="SEO" currentPath={Astro.url.pathname}>
+  <div class="form-card max-w-2xl">
+    <form id="seo-form" class="space-y-4">
+      <div class="form-group">
+        <label for="seo-title">Meta Title</label>
+        <input type="text" id="seo-title" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label for="seo-description">Meta Description</label>
+        <textarea id="seo-description" class="form-input" rows="4"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="seo-keywords">Keywords (separadas por coma)</label>
+        <input type="text" id="seo-keywords" class="form-input" placeholder="café, panadería, Colombia, Avilés..." />
+      </div>
+      <div class="flex gap-3 items-center pt-4">
+        <button type="submit" class="btn-primary" id="seo-save-btn">💾 Guardar</button>
+        <span id="seo-status" class="text-sm text-zinc-400"></span>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script>
+  function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
+  async function api(path, opts = {}) {
+    const token = getToken();
+    const res = await fetch(path, {
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
+      ...opts,
+    });
+    if (!res.ok) throw new Error(`Error: ${res.status}`);
+    return res.json();
+  }
+
+  async function load() {
+    try {
+      const data = await api('/api/site');
+      const seo = data.seo || {};
+      document.getElementById('seo-title').value = seo.title || '';
+      document.getElementById('seo-description').value = seo.description || '';
+      document.getElementById('seo-keywords').value = seo.keywords || '';
+    } catch (err) {
+      document.getElementById('seo-status').textContent = 'Error: ' + err.message;
+    }
+  }
+
+  document.getElementById('seo-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = document.getElementById('seo-status');
+    const btn = document.getElementById('seo-save-btn');
+    btn.disabled = true;
+    status.textContent = 'Guardando...';
+    try {
+      await api('/api/site/seo', {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: document.getElementById('seo-title').value,
+          description: document.getElementById('seo-description').value,
+          keywords: document.getElementById('seo-keywords').value,
+        }),
+      });
+      status.textContent = '✅ Guardado';
+    } catch (err) {
+      status.textContent = 'Error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  load();
+</script>
+
+<style is:global>
+  @reference "tailwindcss";
+  .form-card { @apply bg-white rounded-xl border border-zinc-200 p-6; }
+  .form-group { @apply space-y-1; }
+  .form-group label { @apply block text-sm font-medium text-zinc-700; }
+  .form-input { @apply w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent; }
+  .btn-primary { @apply px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors cursor-pointer border-none font-medium text-sm disabled:opacity-50; }
+</style>

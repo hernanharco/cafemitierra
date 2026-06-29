@@ -1,0 +1,126 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Reseñas" currentPath={Astro.url.pathname}>
+  <div class="mb-4">
+    <p class="text-sm text-zinc-500">
+      Las reseñas de clientes aparecen en la web solo cuando están <strong>aprobadas ✅</strong>.
+      Las nuevas reseñas llegan como <strong>pendientes ⏳</strong>.
+    </p>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Autor</th>
+          <th class="w-24">Rating</th>
+          <th>Texto</th>
+          <th>Fuente</th>
+          <th class="w-24">Estado</th>
+          <th class="w-24">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="reviews-table-body">
+        <tr>
+          <td colspan="7" class="text-center text-zinc-400 py-8">Cargando...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>
+
+<script>
+  function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
+  async function api(path, opts = {}) {
+    const token = getToken();
+    const res = await fetch(path, {
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
+      credentials: 'include',
+      ...opts,
+    });
+    if (!res.ok) throw new Error(`Error: ${res.status}`);
+    return res.json();
+  }
+
+  async function loadReviews() {
+    const tbody = document.getElementById('reviews-table-body');
+    try {
+      // Cargar reseñas del sitio (business.json)
+      const site = await api('/api/site');
+      const reviews = site.reviews || [];
+
+      tbody.innerHTML = reviews.map((r, i) => `
+        <tr class="${r.visible ? '' : 'bg-amber-50/50'}">
+          <td class="text-xs text-zinc-400">—</td>
+          <td class="font-medium">${r.author}</td>
+          <td>${'⭐'.repeat(Math.round(r.rating || 5))}</td>
+          <td class="max-w-xs truncate text-zinc-500">${r.text}</td>
+          <td class="text-zinc-500 text-xs">${r.source || 'manual'}</td>
+          <td>
+            ${r.visible
+              ? '<span class="badge badge-approved">✅ Aprobada</span>'
+              : '<span class="badge badge-pending">⏳ Pendiente</span>'
+            }
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-icon toggle-btn" data-index="${i}" data-visible="${r.visible}" title="${r.visible ? 'Rechazar' : 'Aprobar'}">
+                ${r.visible ? '⛔' : '✅'}
+              </button>
+              <button class="btn-icon delete-btn" data-index="${i}" title="Eliminar">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      tbody.querySelectorAll('.toggle-btn').forEach(b => b.addEventListener('click', () => toggleReview(Number(b.dataset.index), b.dataset.visible === 'true')));
+      tbody.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', () => deleteReview(Number(b.dataset.index))));
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-8">Error: ${err.message}</td></tr>`;
+    }
+  }
+
+  async function toggleReview(index, currentVisible) {
+    try {
+      const site = await api('/api/site');
+      const reviews = site.reviews || [];
+      reviews[index].visible = !currentVisible;
+      await api('/api/site', { method: 'PUT', body: JSON.stringify({ reviews }) });
+      loadReviews();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  async function deleteReview(index) {
+    if (!confirm('¿Eliminar esta reseña?')) return;
+    try {
+      const site = await api('/api/site');
+      const reviews = site.reviews || [];
+      reviews.splice(index, 1);
+      await api('/api/site', { method: 'PUT', body: JSON.stringify({ reviews }) });
+      loadReviews();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  loadReviews();
+</script>
+
+<style is:global>
+  @reference "tailwindcss";
+  .table-container { @apply bg-white rounded-xl border border-zinc-200 overflow-hidden; }
+  .data-table { @apply w-full text-sm; }
+  .data-table th { @apply text-left px-4 py-3 bg-zinc-50 text-zinc-600 font-medium border-b border-zinc-200; }
+  .data-table td { @apply px-4 py-3 border-b border-zinc-100; }
+  .action-buttons { @apply flex gap-1; }
+  .btn-icon { @apply p-1.5 rounded hover:bg-zinc-100 transition-colors cursor-pointer bg-transparent border-none text-sm; }
+  .badge { @apply inline-block px-2 py-0.5 rounded-full text-xs font-medium; }
+  .badge-approved { @apply bg-green-100 text-green-700; }
+  .badge-pending { @apply bg-amber-100 text-amber-700; }
+</style>
