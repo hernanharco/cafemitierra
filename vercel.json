@@ -1,9 +1,9 @@
 {
   "rootDirectory": "frontend",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "https://api-cafemitierra.elrincondeharco.com/api/:path*"
+      "src": "/api/(.*)",
+      "dest": "https://api-cafemitierra.elrincondeharco.com/api/$1"
     }
   ]
 }
