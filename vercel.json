@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://178.104.93.84:8001/api/:path*"
+      "destination": "https://api.cafemitierra.elrincondeharco.com/api/:path*"
     }
   ]
 }
