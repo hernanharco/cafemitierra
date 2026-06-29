@@ -1,9 +1,3 @@
 {
-  "rootDirectory": "frontend",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "https://api-cafemitierra.elrincondeharco.com/api/$1"
-    }
-  ]
+  "rootDirectory": "frontend"
 }
