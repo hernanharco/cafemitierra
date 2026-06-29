@@ -5,7 +5,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copiar monorepo
-COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml .npmrc ./
 COPY backend/package.json ./backend/package.json
 
 # Instalar dependencias del backend
