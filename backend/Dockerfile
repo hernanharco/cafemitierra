@@ -14,8 +14,9 @@ RUN pnpm install --filter backend --no-frozen-lockfile --ignore-scripts 2>&1
 # Ejecutar builds necesarios
 RUN pnpm rebuild esbuild 2>&1 || true
 
-# Copiar código del backend
+# Copiar código del backend y datos del frontend
 COPY backend/ ./backend/
+COPY frontend/src/data/ ./frontend/src/data/
 
 EXPOSE 8001
 
