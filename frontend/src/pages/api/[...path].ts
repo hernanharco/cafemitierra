@@ -2,16 +2,11 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
-/**
- * Proxy para llamadas API desde el frontend al backend
- * Captura todas las rutas /api/* que no tengan un handler específico
- */
-export const ALL: APIRoute = async ({ request }) => {
-  const url = new URL(request.url);
-  const path = url.pathname; // /api/menu, /api/site, etc.
-  const search = url.search;
+const BACKEND_BASE = 'https://api-cafemitierra.elrincondeharco.com';
 
-  const backendUrl = `https://api-cafemitierra.elrincondeharco.com${path}${search}`;
+async function proxy(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  const backendUrl = `${BACKEND_BASE}${url.pathname}${url.search}`;
 
   const headers = new Headers(request.headers);
   headers.delete('host');
@@ -20,7 +15,7 @@ export const ALL: APIRoute = async ({ request }) => {
     const response = await fetch(backendUrl, {
       method: request.method,
       headers,
-      body: request.method !== 'GET' && request.method !== 'HEAD' ? await request.text() : undefined,
+      body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text(),
     });
 
     return new Response(response.body, {
@@ -28,10 +23,18 @@ export const ALL: APIRoute = async ({ request }) => {
       statusText: response.statusText,
       headers: response.headers,
     });
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ error: 'Backend no disponible' }), {
       status: 502,
       headers: { 'Content-Type': 'application/json' },
     });
   }
-};
+}
+
+export const GET: APIRoute = async ({ request }) => proxy(request);
+export const POST: APIRoute = async ({ request }) => proxy(request);
+export const PUT: APIRoute = async ({ request }) => proxy(request);
+export const DELETE: APIRoute = async ({ request }) => proxy(request);
+export const PATCH: APIRoute = async ({ request }) => proxy(request);
+export const HEAD: APIRoute = async ({ request }) => proxy(request);
+export const OPTIONS: APIRoute = async ({ request }) => proxy(request);
