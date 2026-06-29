@@ -36,5 +36,3 @@ export const POST: APIRoute = async ({ request }) => proxy(request);
 export const PUT: APIRoute = async ({ request }) => proxy(request);
 export const DELETE: APIRoute = async ({ request }) => proxy(request);
 export const PATCH: APIRoute = async ({ request }) => proxy(request);
-export const HEAD: APIRoute = async ({ request }) => proxy(request);
-export const OPTIONS: APIRoute = async ({ request }) => proxy(request);
