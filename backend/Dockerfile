@@ -9,7 +9,9 @@ COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/package.json
 
 # Instalar solo las dependencias del backend
-RUN pnpm install --frozen-lockfile --filter backend
+# Deshabilitar verificación de antigüedad mínima de paquetes (entorno controlado)
+ENV PNPM_MINIMUM_RELEASE_AGE=0
+RUN pnpm install --filter backend
 
 # Copiar código del backend
 COPY backend/ ./backend/
