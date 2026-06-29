@@ -2,16 +2,17 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 
+# Deshabilitar verificación de antigüedad de paquetes para el build
+ENV COREPACK_ENABLE_STRICT=0
+
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copiar monorepo (contexto = raíz del proyecto)
+# Copiar archivos de dependencias
 COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/package.json
 
-# Instalar solo las dependencias del backend
-# .npmrc para deshabilitar verificación de antigüedad de paquetes
-COPY backend/.npmrc ./.npmrc
-RUN pnpm install --filter backend
+# Instalar dependencias del backend
+RUN pnpm install --filter backend --config.minimumReleaseAge=0
 
 # Copiar código del backend
 COPY backend/ ./backend/
