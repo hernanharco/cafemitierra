@@ -17,7 +17,7 @@ services:
     environment:
       POSTGRES_DB: cafemitierra
       POSTGRES_USER: cafemitierra
-      POSTGRES_PASSWORD: REMOVED
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - cafemitierra_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -45,7 +45,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: "postgres://cafemitierra:REMOVED@cafemitierra-db:5432/cafemitierra"
+      DATABASE_URL: "postgres://cafemitierra:${POSTGRES_PASSWORD}@cafemitierra-db:5432/cafemitierra"
       NODE_ENV: development
       CORS_ORIGINS: '["http://localhost:4321", "http://localhost:4322", "http://localhost:4323"]'
     volumes:
