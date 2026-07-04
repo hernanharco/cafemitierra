@@ -2,6 +2,12 @@
 export const prerender = false;
 import '../../styles/global.css';
 // Página pública — no necesita autenticación
+
+// ── URLs de API ──────────────────────────────────────────────
+// BACKEND_URL: API del negocio (CafeMiTierra) — para CRUD del sitio
+// AUTHCORE_URL: API de autenticación (authCore HUB) — para Google OAuth
+const BACKEND_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:8000';
+const AUTHCORE_URL = import.meta.env.PUBLIC_AUTHCORE_URL || 'https://api-authcore.elrincondeharco.com';
 ---
 
 <!DOCTYPE html>
@@ -52,13 +58,12 @@ import '../../styles/global.css';
       </div>
     </div>
 
-    <script>
+    <script define:vars={{ BACKEND_URL, AUTHCORE_URL }}>
       // ── Google Login (authCore) ──────────────────────────────
       document.getElementById('google-login')?.addEventListener('click', () => {
-        const BACKEND_URL = 'http://localhost:8000';
         const callbackUrl = `${window.location.origin}/auth/callback`;
 
-        const authUrl = new URL(`${BACKEND_URL}/api/v1/auth/google`);
+        const authUrl = new URL(`${AUTHCORE_URL}/api/v1/auth/google`);
         authUrl.searchParams.set('redirect_to', callbackUrl);
 
         window.location.href = authUrl.toString();
@@ -67,7 +72,7 @@ import '../../styles/global.css';
       // ── Dev Login (solo local) ───────────────────────────────
       document.getElementById('dev-login-btn')?.addEventListener('click', async () => {
         try {
-          const res = await fetch('/api/auth/dev-login', {
+          const res = await fetch(`${BACKEND_URL}/api/auth/dev-login`, {
             method: 'POST',
           });
           const data = await res.json();
