@@ -8,6 +8,9 @@ export interface Props {
 }
 
 const { title, currentPath } = Astro.props;
+
+// URL base de la API de CafeMiTierra (backend)
+const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000';
 ---
 
 <!DOCTYPE html>
@@ -17,6 +20,16 @@ const { title, currentPath } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} — Café Mi Tierra Admin</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <script define:vars={{ API_URL }}>
+      // Parchear fetch para que las URLs /api/* vayan al backend correcto
+      const origFetch = window.fetch;
+      window.fetch = function(url, options = {}) {
+        if (typeof url === 'string' && url.startsWith('/api/') && !url.startsWith('http')) {
+          url = `${API_URL}${url}`;
+        }
+        return origFetch.call(this, url, options);
+      };
+    </script>
   </head>
   <body class="bg-zinc-50 text-zinc-900">
     <Sidebar currentPath={currentPath} />

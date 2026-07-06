@@ -47,10 +47,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 <script>
   function getToken() {
     const cookie = document.cookie;
-    console.log('[hero] cookies:', cookie);
-    const found = cookie.split('; ').find(r => r.startsWith('token='));
-    console.log('[hero] token found:', found);
-    return found?.split('=')[1];
+    return cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
   }
   async function api(path, opts = {}) {
     const token = getToken();

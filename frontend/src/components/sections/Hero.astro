@@ -1,5 +1,10 @@
 ---
-import business from '../../data/business.json';
+export interface Props {
+  business: any;
+}
+
+const { business } = Astro.props;
+
 
 const heroImages = business.hero_images || [
   { src: '/images/google-photo-3.jpg', alt: 'Pan artesanal colombiano' },

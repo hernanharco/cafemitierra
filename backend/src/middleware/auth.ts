@@ -16,6 +16,7 @@ export async function authMiddleware(c: Context, next: Next) {
   if (path === '/api/reviews' && method === 'POST') return next();  // Enviar reseña
   if (path === '/api/reviews/public') return next();                // Reseñas visibles
   if (path.startsWith('/api/auth')) return next();                  // Auth endpoints
+  if (path === '/api/site' && method === 'GET') return next();      // Landing page pública
 
   // Buscar token: primero en header Authorization, después en cookie
   let token: string | undefined;

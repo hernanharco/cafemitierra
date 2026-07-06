@@ -13,7 +13,7 @@ const API_TARGET = process.env.API_TARGET || 'http://localhost:8001';
 export default defineConfig({
   // En Astro 7, output: "static" (default) permite páginas SSR
   // con export const prerender = false
-  output: 'static',
+  output: 'server',
 
   // Seguridad
   security: {

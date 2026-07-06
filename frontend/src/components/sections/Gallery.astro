@@ -1,5 +1,10 @@
 ---
-import business from '../../data/business.json';
+export interface Props {
+  business: any;
+}
+
+const { business } = Astro.props;
+
 import ScrollReveal from '../effects/ScrollReveal.astro';
 
 const galleryImages = business.gallery_images || [

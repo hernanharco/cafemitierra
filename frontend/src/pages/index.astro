@@ -1,5 +1,14 @@
 ---
-export const prerender = true;
+// SSR: cargar datos frescos desde la API en cada visita
+const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:8001';
+let business = {};
+
+try {
+  const res = await fetch(`${API_URL}/api/site`);
+  if (res.ok) business = await res.json();
+} catch (e) {
+  console.error('Error al cargar datos del sitio:', e);
+}
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SmoothScroll from '../components/effects/SmoothScroll.astro';
@@ -41,40 +50,40 @@ import Footer from '../components/sections/Footer.astro';
 
     <!-- HERO -->
     <section id="inicio">
-      <Hero />
+      <Hero business={business} />
     </section>
 
     <!-- ABOUT -->
     <section id="nosotros">
-      <About />
+      <About business={business} />
     </section>
 
     <!-- SERVICES -->
     <section id="servicios">
-      <Services />
+      <Services business={business} />
     </section>
 
     <!-- SCHEDULE -->
     <section id="horarios">
-      <Schedule />
+      <Schedule business={business} />
     </section>
 
     <!-- REVIEWS -->
     <section id="resenas">
-      <Reviews />
+      <Reviews business={business} />
     </section>
 
     <!-- GALLERY -->
     <section id="galeria">
-      <Gallery />
+      <Gallery business={business} />
     </section>
 
     <!-- CONTACT -->
     <section id="contacto">
-      <Contact />
+      <Contact business={business} />
     </section>
 
     <!-- FOOTER -->
-    <Footer />
+    <Footer business={business} />
   </SmoothScroll>
 </BaseLayout>

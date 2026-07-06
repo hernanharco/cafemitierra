@@ -28,7 +28,7 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
     maxAge: 60 * 60 * 24 * 7, // 7 días
     httpOnly: false,           // Accesible desde JS para el dashboard
     sameSite: 'lax',
-    secure: false,             // En desarrollo con localhost
+    secure: true,              // HTTPS en producción
   });
 
   return redirect('/admin');
