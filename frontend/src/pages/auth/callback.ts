@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
 export const prerender = false;
 
@@ -13,23 +13,23 @@ export const prerender = false;
  */
 export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   // Intentar obtener token de query param primero, luego de path
-  const token = url.searchParams.get('token') || url.pathname.split('/').pop();
+  const token = url.searchParams.get("token") || url.pathname.split("/").pop();
 
-  if (!token || token === 'callback') {
-    return new Response(JSON.stringify({ error: 'Token no proporcionado' }), {
+  if (!token || token === "callback") {
+    return new Response(JSON.stringify({ error: "Token no proporcionado" }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   }
 
   // Guardar token en cookie (7 días)
-  cookies.set('token', token, {
-    path: '/',
+  cookies.set("token", token, {
+    path: "/",
     maxAge: 60 * 60 * 24 * 7, // 7 días
-    httpOnly: false,           // Accesible desde JS para el dashboard
-    sameSite: 'lax',
-    secure: true,              // HTTPS en producción
+    httpOnly: false, // Accesible desde JS para el dashboard
+    sameSite: "lax",
+    secure: true, // HTTPS en producción
   });
 
-  return redirect('/admin');
+  return redirect("/admin");
 };

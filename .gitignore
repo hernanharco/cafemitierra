@@ -13,6 +13,12 @@ dist/
 
 # test results
 test-results/
+coverage/
+backend/coverage/
+frontend/coverage/
+
+# Playwright
+playwright-report/
 
 # generated types
 .astro/
@@ -32,6 +38,9 @@ pnpm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Husky internal tools
+.husky/_
 
 # Drizzle
 drizzle/

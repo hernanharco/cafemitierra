@@ -1,14 +1,14 @@
 ---
 export interface Props {
   rating: number;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   showNumber?: boolean;
 }
 
-const { rating, size = 'md', showNumber = true } = Astro.props;
+const { rating, size = "md", showNumber = true } = Astro.props;
 
-const starSize = { sm: 'w-4 h-4', md: 'w-5 h-5', lg: 'w-6 h-6' };
-const textSize = { sm: 'text-sm', md: 'text-base', lg: 'text-lg' };
+const starSize = { sm: "w-4 h-4", md: "w-5 h-5", lg: "w-6 h-6" };
+const textSize = { sm: "text-sm", md: "text-base", lg: "text-lg" };
 
 const fullStars = Math.floor(rating);
 const hasHalf = rating - fullStars >= 0.3;

@@ -1,25 +1,27 @@
 ---
 export interface Props {
   href?: string;
-  variant?: 'primary' | 'secondary' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "outline";
+  size?: "sm" | "md" | "lg";
   class?: string;
 }
 
-const { href, variant = 'primary', size = 'md', class: className = '' } = Astro.props;
+const { href, variant = "primary", size = "md", class: className = "" } = Astro.props;
 
-const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-300 cursor-pointer no-underline';
+const baseClasses =
+  "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-300 cursor-pointer no-underline";
 
 const variantClasses = {
-  primary: 'bg-rojo text-white hover:bg-rojo-dark hover:shadow-lg hover:shadow-rojo/25 active:scale-95',
-  secondary: 'bg-rojo text-cream hover:bg-rojo-dark hover:shadow-lg active:scale-95',
-  outline: 'border-2 border-rojo text-rojo hover:bg-rojo hover:text-white active:scale-95',
+  primary:
+    "bg-rojo text-white hover:bg-rojo-dark hover:shadow-lg hover:shadow-rojo/25 active:scale-95",
+  secondary: "bg-rojo text-cream hover:bg-rojo-dark hover:shadow-lg active:scale-95",
+  outline: "border-2 border-rojo text-rojo hover:bg-rojo hover:text-white active:scale-95",
 };
 
 const sizeClasses = {
-  sm: 'px-4 py-2 text-sm gap-1.5',
-  md: 'px-6 py-3 text-base gap-2',
-  lg: 'px-8 py-4 text-lg gap-2.5',
+  sm: "px-4 py-2 text-sm gap-1.5",
+  md: "px-6 py-3 text-base gap-2",
+  lg: "px-8 py-4 text-lg gap-2.5",
 };
 ---
 

@@ -1,0 +1,67 @@
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+  Tech stack: pnpm monorepo (backend/ + frontend/)
+  Backend: Hono 4 + Drizzle ORM + PostgreSQL + Zod 4 + Cloudinary
+  Frontend: Astro 7 + Svelte 5 + Tailwind CSS 4 + GSAP + Three.js
+  Architecture: SSR landing page + CRM admin via Hono API
+  Auth: JWT RS256 via external authCore (Google OAuth)
+  Testing: vitest (backend), frontend pending
+  Style: TypeScript strict mode, no linter/formatter configured
+
+strict_tdd: true
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected packages (backend/frontend/both)
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex API flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group tasks by phase (infrastructure, implementation, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing code patterns and conventions
+    - Load relevant coding skills (astro, tailwind-4, zod-4)
+    - Write tests BEFORE implementation code (TDD)
+  verify:
+    - Run tests before marking complete
+    - Compare implementation against every spec scenario
+  archive:
+    - Warn before merging destructive deltas (large removals)
+
+testing:
+  strict_tdd_mode: true
+  detected: "2026-07-15"
+  test_runner:
+    command: "pnpm --filter backend test"
+    framework: "vitest"
+  layers:
+    unit:
+      available: true
+      tool: "vitest"
+    integration:
+      available: false
+      tool: ""
+    e2e:
+      available: false
+      tool: ""
+  coverage:
+    available: true
+    command: "pnpm --filter backend test:coverage"
+  quality:
+    linter:
+      available: false
+      command: ""
+    type_checker:
+      available: true
+      command: "pnpm --filter backend typecheck"
+    formatter:
+      available: false
+      command: ""

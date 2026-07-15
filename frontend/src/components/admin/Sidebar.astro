@@ -6,19 +6,19 @@ export interface Props {
 const { currentPath } = Astro.props;
 
 const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: '📊' },
-  { href: '/admin/hero', label: 'Hero / Carrusel', icon: '🖼️' },
-  { href: '/admin/about', label: 'Nosotros', icon: '📝' },
-  { href: '/admin/services', label: 'Servicios', icon: '⚙️' },
-  { href: '/admin/schedule', label: 'Horarios', icon: '🕐' },
-  { href: '/admin/gallery', label: 'Galería', icon: '📸' },
-  { href: '/admin/reviews', label: 'Reseñas', icon: '⭐' },
-  { href: '/admin/info', label: 'Información / Contacto', icon: 'ℹ️' },
-  { href: '/admin/seo', label: 'SEO', icon: '🔍' },
+  { href: "/admin", label: "Dashboard", icon: "📊" },
+  { href: "/admin/hero", label: "Hero / Carrusel", icon: "🖼️" },
+  { href: "/admin/about", label: "Nosotros", icon: "📝" },
+  { href: "/admin/services", label: "Servicios", icon: "⚙️" },
+  { href: "/admin/schedule", label: "Horarios", icon: "🕐" },
+  { href: "/admin/gallery", label: "Galería", icon: "📸" },
+  { href: "/admin/reviews", label: "Reseñas", icon: "⭐" },
+  { href: "/admin/info", label: "Información / Contacto", icon: "ℹ️" },
+  { href: "/admin/seo", label: "SEO", icon: "🔍" },
 ];
 
 function isActive(href: string) {
-  if (href === '/admin') return currentPath === '/admin';
+  if (href === "/admin") return currentPath === "/admin";
   return currentPath.startsWith(href);
 }
 ---

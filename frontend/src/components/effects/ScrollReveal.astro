@@ -2,10 +2,10 @@
 export interface Props {
   class?: string;
   delay?: number;
-  direction?: 'up' | 'down' | 'left' | 'right' | 'none';
+  direction?: "up" | "down" | "left" | "right" | "none";
 }
 
-const { class: className = '', delay = 0, direction = 'up' } = Astro.props;
+const { class: className = "", delay = 0, direction = "up" } = Astro.props;
 ---
 
 <div class={`scroll-reveal ${className}`} data-delay={delay} data-direction={direction}>

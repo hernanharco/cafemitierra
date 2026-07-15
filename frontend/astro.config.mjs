@@ -1,19 +1,20 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
-import svelte from '@astrojs/svelte';
-import tailwindcss from '@tailwindcss/vite';
-import node from '@astrojs/node';
-import vercel from '@astrojs/vercel';
+
+import node from "@astrojs/node";
+import svelte from "@astrojs/svelte";
+import vercel from "@astrojs/vercel";
+import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "astro/config";
 
 // ── Proxy target configurable ──────────────────────────────────
 // En local sin Docker: usa localhost:8001
 // En Docker: se setea API_TARGET=http://cafemitierra-api:8001
-const API_TARGET = process.env.API_TARGET || 'http://localhost:8001';
+const API_TARGET = process.env.API_TARGET || "http://localhost:8001";
 
 export default defineConfig({
   // En Astro 7, output: "static" (default) permite páginas SSR
   // con export const prerender = false
-  output: 'server',
+  output: "server",
 
   // Seguridad
   security: {
@@ -24,7 +25,7 @@ export default defineConfig({
   adapter: process.env.VERCEL
     ? vercel()
     : node({
-        mode: 'standalone',
+        mode: "standalone",
         trustForwardedHeaders: true,
       }),
 
@@ -39,7 +40,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
     server: {
       proxy: {
-        '/api': {
+        "/api": {
           target: API_TARGET,
           changeOrigin: true,
         },

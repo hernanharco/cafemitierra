@@ -5,12 +5,12 @@ export interface Props {
 
 const { business } = Astro.props;
 
-import ScrollReveal from '../effects/ScrollReveal.astro';
+import ScrollReveal from "../effects/ScrollReveal.astro";
 
 const about = business.about || {};
-const imageSrc = about.image || '/images/google-photo-1.jpg';
-const imageAlt = about.imageAlt || 'Interior de Café Mi Tierra';
-const badge = about.badge || '☕ Café colombiano de origen';
+const imageSrc = about.image || "/images/google-photo-1.jpg";
+const imageAlt = about.imageAlt || "Interior de Café Mi Tierra";
+const badge = about.badge || "☕ Café colombiano de origen";
 ---
 
 <section class="py-24 px-6 bg-cream">

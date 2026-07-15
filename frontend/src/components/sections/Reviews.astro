@@ -5,8 +5,8 @@ export interface Props {
 
 const { business } = Astro.props;
 
-import StarRating from '../ui/StarRating.astro';
-import ScrollReveal from '../effects/ScrollReveal.astro';
+import ScrollReveal from "../effects/ScrollReveal.astro";
+import StarRating from "../ui/StarRating.astro";
 
 const visibleReviews = business.reviews.filter((r) => r.visible !== false);
 ---

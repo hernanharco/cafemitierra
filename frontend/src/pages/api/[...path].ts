@@ -1,21 +1,21 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
 export const prerender = false;
 
-const BACKEND_BASE = 'https://api-cafemitierra.elrincondeharco.com';
+const BACKEND_BASE = "https://api-cafemitierra.elrincondeharco.com";
 
 async function proxy(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const backendUrl = `${BACKEND_BASE}${url.pathname}${url.search}`;
 
   const headers = new Headers(request.headers);
-  headers.delete('host');
+  headers.delete("host");
 
   try {
     const response = await fetch(backendUrl, {
       method: request.method,
       headers,
-      body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text(),
+      body: ["GET", "HEAD"].includes(request.method) ? undefined : await request.text(),
     });
 
     return new Response(response.body, {
@@ -24,9 +24,9 @@ async function proxy(request: Request): Promise<Response> {
       headers: response.headers,
     });
   } catch {
-    return new Response(JSON.stringify({ error: 'Backend no disponible' }), {
+    return new Response(JSON.stringify({ error: "Backend no disponible" }), {
       status: 502,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   }
 }

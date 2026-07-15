@@ -5,11 +5,12 @@ export interface Props {
 
 const { business } = Astro.props;
 
-import ScrollReveal from '../effects/ScrollReveal.astro';
+import ScrollReveal from "../effects/ScrollReveal.astro";
 
-const title = business.services_title || 'Nuestros Servicios';
-const subtitle = business.services_subtitle || 'Lo que ofrecemos';
-const desc = business.services_description || 'Cada producto está hecho con amor y los mejores ingredientes';
+const title = business.services_title || "Nuestros Servicios";
+const subtitle = business.services_subtitle || "Lo que ofrecemos";
+const desc =
+  business.services_description || "Cada producto está hecho con amor y los mejores ingredientes";
 ---
 
 <section class="py-24 px-6 bg-warm-white">

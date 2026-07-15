@@ -1,0 +1,22 @@
+#!/bin/sh
+# Validar que el mensaje de commit sigue conventional commits
+# Formato: type(scope): description  o  type: description
+
+commit_msg=$(cat "$1")
+
+# Regex: type(scope)!?: description  o  type: description
+if ! echo "$commit_msg" | grep -qE '^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9._-]+\))?!?: .+'; then
+  echo ""
+  echo "❌ ERROR: El mensaje de commit no sigue conventional commits."
+  echo ""
+  echo "Formato esperado: type(scope): description"
+  echo "  type: build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test"
+  echo "  scope: opcional (ej: backend, frontend, db)"
+  echo ""
+  echo "Ejemplos:"
+  echo "  feat(backend): add user login endpoint"
+  echo "  fix(frontend): correct button alignment"
+  echo "  chore: update dependencies"
+  echo ""
+  exit 1
+fi

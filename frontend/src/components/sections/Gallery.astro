@@ -5,15 +5,19 @@ export interface Props {
 
 const { business } = Astro.props;
 
-import ScrollReveal from '../effects/ScrollReveal.astro';
+import ScrollReveal from "../effects/ScrollReveal.astro";
 
 const galleryImages = business.gallery_images || [
-  { src: '/images/google-photo-2.jpg', alt: 'Interior acogedor de Café Mi Tierra', label: 'Ambiente' },
-  { src: '/images/google-photo-5.jpg', alt: 'Café colombiano recién preparado', label: 'Café' },
-  { src: '/images/google-photo-3.jpg', alt: 'Pan artesanal colombiano', label: 'Panadería' },
-  { src: '/images/google-photo-7.jpg', alt: 'Desayuno completo', label: 'Desayunos' },
-  { src: '/images/google-photo-10.jpg', alt: 'Brunch de fin de semana', label: 'Brunch' },
-  { src: '/images/google-photo-4.jpg', alt: 'Granos de café colombiano', label: 'Origen' },
+  {
+    src: "/images/google-photo-2.jpg",
+    alt: "Interior acogedor de Café Mi Tierra",
+    label: "Ambiente",
+  },
+  { src: "/images/google-photo-5.jpg", alt: "Café colombiano recién preparado", label: "Café" },
+  { src: "/images/google-photo-3.jpg", alt: "Pan artesanal colombiano", label: "Panadería" },
+  { src: "/images/google-photo-7.jpg", alt: "Desayuno completo", label: "Desayunos" },
+  { src: "/images/google-photo-10.jpg", alt: "Brunch de fin de semana", label: "Brunch" },
+  { src: "/images/google-photo-4.jpg", alt: "Granos de café colombiano", label: "Origen" },
 ];
 ---
 
