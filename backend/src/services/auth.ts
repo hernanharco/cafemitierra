@@ -29,39 +29,35 @@ export function setPublicKey(key: string) {
 }
 
 /**
- * Verifica un JWT token de authCore
- * En desarrollo, acepta un token de prueba
+ * Decodifica (sin verificar) el payload de un JWT.
+ * Solo debe usarse en development o después de verificar firma.
  */
-export async function verifyToken(
-  token: string,
-): Promise<{ userId: string; email: string } | null> {
-  // En desarrollo, aceptar token simple
-  const env = process.env.NODE_ENV || "development";
-  if (env === "development" && token === "dev-token") {
-    return { userId: "dev-user", email: "dev@cafemitierra.com" };
-  }
-
+function decodePayload(token: string): { userId?: string; email?: string } | null {
   try {
-    // Decodificar payload del JWT (sin verificar firma por ahora)
     const [, payloadB64] = token.split(".");
     if (!payloadB64) return null;
-
     const decoded = JSON.parse(atob(payloadB64));
-    const userId = decoded.sub || decoded.userId;
-    const email = decoded.email;
+    return {
+      userId: decoded.sub || decoded.userId,
+      email: decoded.email,
+    };
+  } catch {
+    return null;
+  }
+}
 
-    // Aceptar JWT de authCore (decodificamos el payload)
-    // En producción se puede agregar verificación de firma contra authCore
-    if (userId && email) {
-      return { userId, email };
-    }
-
-    // Fallback: intentar verificar firma con clave pública
+/**
+ * Verifica la firma RS256 de un JWT contra la clave pública de authCore.
+ */
+async function verifySignature(token: string): Promise<boolean> {
+  try {
     const key = await getPublicKey();
-    if (!key) return null;
+    if (!key) return false;
+
+    const [header, payload, signature] = token.split(".");
+    if (!header || !payload || !signature) return false;
 
     const encoder = new TextEncoder();
-    const [header, payload, signature] = token.split(".");
     const keyData = await crypto.subtle.importKey(
       "spki",
       pemToBuffer(key),
@@ -72,20 +68,58 @@ export async function verifyToken(
 
     const data = encoder.encode(`${header}.${payload}`);
     const sig = base64UrlToBuffer(signature);
-    const valid = await crypto.subtle.verify(
+    return await crypto.subtle.verify(
       { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
       keyData,
       sig,
       data,
     );
+  } catch {
+    return false;
+  }
+}
 
-    if (!valid) return null;
+/**
+ * Verifica un JWT token de authCore
+ *
+ * En PRODUCCIÓN:
+ *   - Solo acepta tokens con firma RS256 válida contra authCore
+ *   - Si no hay clave pública disponible, RECHAZA todos los tokens
+ *
+ * En DESARROLLO:
+ *   - Acepta "dev-token" para desarrollo local
+ *   - Decodifica JWT sin verificar firma (para testing)
+ */
+export async function verifyToken(
+  token: string,
+): Promise<{ userId: string; email: string } | null> {
+  const env = process.env.NODE_ENV || "development";
 
-    return { userId, email };
-  } catch (error) {
-    console.error("Error verificando token:", error);
+  // ── MODO DESARROLLO ──────────────────────────────────────────
+  if (env === "development") {
+    // Aceptar dev-token para desarrollo local
+    if (token === "dev-token") {
+      return { userId: "dev-user", email: "dev@cafemitierra.com" };
+    }
+
+    // Decodificar payload sin verificar firma (conveniente para testing)
+    const payload = decodePayload(token);
+    if (payload?.userId && payload?.email) {
+      return { userId: payload.userId, email: payload.email };
+    }
     return null;
   }
+
+  // ── MODO PRODUCCIÓN ──────────────────────────────────────────
+  // PASO 1: Verificar firma RS256 contra authCore
+  const signatureValid = await verifySignature(token);
+  if (!signatureValid) return null;
+
+  // PASO 2: Decodificar payload (solo después de firma válida)
+  const payload = decodePayload(token);
+  if (!payload?.userId || !payload?.email) return null;
+
+  return { userId: payload.userId, email: payload.email };
 }
 
 function pemToBuffer(pem: string): ArrayBuffer {

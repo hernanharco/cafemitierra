@@ -50,16 +50,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   async function loadReviews() {
     const tbody = document.getElementById('reviews-table-body');
     try {
-      // Cargar reseñas del sitio (business.json)
-      const site = await api('/api/site');
-      const reviews = site.reviews || [];
+      // Cargar reseñas desde la DB via /api/reviews
+      const reviews = await api('/api/reviews');
 
-      tbody.innerHTML = reviews.map((r, i) => `
+      tbody.innerHTML = reviews.map(r => {
+        const created = r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—';
+        return `
         <tr class="${r.visible ? '' : 'bg-amber-50/50'}">
-          <td class="text-xs text-zinc-400">—</td>
-          <td class="font-medium">${r.author}</td>
+          <td class="text-xs text-zinc-400">${created}</td>
+          <td class="font-medium">${escapeHtml(r.author)}</td>
           <td>${'⭐'.repeat(Math.round(r.rating || 5))}</td>
-          <td class="max-w-xs truncate text-zinc-500">${r.text}</td>
+          <td class="max-w-xs truncate text-zinc-500">${escapeHtml(r.text)}</td>
           <td class="text-zinc-500 text-xs">${r.source || 'manual'}</td>
           <td>
             ${r.visible
@@ -69,45 +70,52 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </td>
           <td>
             <div class="action-buttons">
-              <button class="btn-icon toggle-btn" data-index="${i}" data-visible="${r.visible}" title="${r.visible ? 'Rechazar' : 'Aprobar'}">
+              <button class="btn-icon toggle-btn" data-id="${r.id}" data-visible="${r.visible}" title="${r.visible ? 'Rechazar' : 'Aprobar'}">
                 ${r.visible ? '⛔' : '✅'}
               </button>
-              <button class="btn-icon delete-btn" data-index="${i}" title="Eliminar">🗑️</button>
+              <button class="btn-icon delete-btn" data-id="${r.id}" title="Eliminar">🗑️</button>
             </div>
           </td>
-        </tr>
-      `).join('');
+        </tr>`;
+      }).join('');
 
-      tbody.querySelectorAll('.toggle-btn').forEach(b => b.addEventListener('click', () => toggleReview(Number(b.dataset.index), b.dataset.visible === 'true')));
-      tbody.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', () => deleteReview(Number(b.dataset.index))));
+      tbody.querySelectorAll('.toggle-btn').forEach(b =>
+        b.addEventListener('click', () => toggleReview(Number(b.dataset.id), b.dataset.visible === 'true'))
+      );
+      tbody.querySelectorAll('.delete-btn').forEach(b =>
+        b.addEventListener('click', () => deleteReview(Number(b.dataset.id)))
+      );
     } catch (err) {
       tbody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-8">Error: ${err.message}</td></tr>`;
     }
   }
 
-  async function toggleReview(index, currentVisible) {
+  async function toggleReview(id, currentVisible) {
     try {
-      const site = await api('/api/site');
-      const reviews = site.reviews || [];
-      reviews[index].visible = !currentVisible;
-      await api('/api/site', { method: 'PUT', body: JSON.stringify({ reviews }) });
+      await api(`/api/reviews/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ visible: !currentVisible }),
+      });
       loadReviews();
     } catch (err) {
       alert('Error: ' + err.message);
     }
   }
 
-  async function deleteReview(index) {
+  async function deleteReview(id) {
     if (!confirm('¿Eliminar esta reseña?')) return;
     try {
-      const site = await api('/api/site');
-      const reviews = site.reviews || [];
-      reviews.splice(index, 1);
-      await api('/api/site', { method: 'PUT', body: JSON.stringify({ reviews }) });
+      await api(`/api/reviews/${id}`, { method: 'DELETE' });
       loadReviews();
     } catch (err) {
       alert('Error: ' + err.message);
     }
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   loadReviews();

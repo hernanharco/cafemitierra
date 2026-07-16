@@ -15,7 +15,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.6",
@@ -32,6 +33,7 @@
     "@types/pg": "^8.11.0",
     "@vitest/coverage-v8": "^4.1.10",
     "drizzle-kit": "^0.31.0",
+    "esbuild": "^0.28.1",
     "tsx": "^4.19.0",
     "typescript": "^5.8.0",
     "vitest": "^4.1.10"

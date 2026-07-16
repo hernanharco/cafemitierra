@@ -1,4 +1,14 @@
-import { boolean, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import {
+  boolean,
+  check,
+  integer,
+  jsonb,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 // ── Galería de imágenes ────────────────────────────────────────
 export const galleryImages = pgTable("gallery_images", {
@@ -15,16 +25,22 @@ export const galleryImages = pgTable("gallery_images", {
 });
 
 // ── Reseñas / Testimonios ──────────────────────────────────────
-export const reviews = pgTable("reviews", {
-  id: serial("id").primaryKey(),
-  author: text("author").notNull(),
-  rating: integer("rating").notNull().default(5),
-  text: text("text").notNull(),
-  source: text("source").default("manual"), // 'google', 'manual', etc.
-  visible: boolean("visible").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export const reviews = pgTable(
+  "reviews",
+  {
+    id: serial("id").primaryKey(),
+    author: text("author").notNull(),
+    rating: integer("rating").notNull().default(5),
+    text: text("text").notNull(),
+    source: text("source").default("manual"), // 'google', 'manual', etc.
+    visible: boolean("visible").default(true),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    ratingCheck: check("reviews_rating_check", sql`${table.rating} >= 1 AND ${table.rating} <= 5`),
+  }),
+);
 
 // ── Mensajes de contacto ───────────────────────────────────────
 export const contactMessages = pgTable("contact_messages", {

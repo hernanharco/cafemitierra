@@ -1,43 +1,61 @@
-# Astro Starter Kit: Minimal
+# ☕ Café Mi Tierra
 
-```sh
-npm create astro@latest -- --template minimal
+Sitio web profesional para **Café Mi Tierra**, un café colombiano en Avilés, Asturias.
+
+## Stack
+
+- **Frontend**: [Astro 7](https://astro.build) SSR + Tailwind CSS 4 + GSAP/Lenis
+- **Backend**: [Hono](https://hono.dev) + [Drizzle ORM](https://orm.drizzle.team) + PostgreSQL
+- **Auth**: [authCore](https://github.com/hernanharco/authcore) (Google OAuth)
+- **Images**: Cloudinary
+- **Deploy**: Frontend → Vercel, Backend + DB → Hetzner VPS (Docker)
+
+## Estructura
+
+```
+├── frontend/          # Astro SSR (landing + admin panel)
+│   └── src/
+│       ├── components/  # Componentes landing + admin
+│       ├── layouts/     # Layouts (Base, Admin)
+│       ├── pages/       # Rutas (/, /admin/*, /auth/callback)
+│       └── data/        # business.json (datos del sitio)
+├── backend/           # Hono API + Drizzle + PostgreSQL
+│   └── src/
+│       ├── routes/    # Endpoints (/api/site, /api/gallery, etc.)
+│       ├── services/  # Auth, Cloudinary
+│       ├── middleware/ # Auth, rate limiter, security headers
+│       └── db/        # Drizzle schema + connection
+├── scripts/           # Deploy pipeline
+├── tests/e2e/         # Playwright E2E tests
+└── openspec/          # Spec-Driven Development artifacts
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Comandos
 
-## 🚀 Project Structure
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm dev` | Inicia backend + frontend en paralelo |
+| `pnpm build` | Build de producción (backend + frontend) |
+| `pnpm test` | Tests (backend + frontend) |
+| `pnpm lint` | Linter + formatter (Biome) |
+| `pnpm deploy` | Pipeline completo a producción |
+| `pnpm --filter backend seed` | Migrar datos iniciales a DB |
 
-Inside of your Astro project, you'll see the following folders and files:
+## Desarrollo
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```bash
+pnpm install
+pnpm dev
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Frontend: http://localhost:4323
+Backend: http://localhost:8001
+Admin: http://localhost:4323/admin
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Variables de Entorno
 
-Any static assets, like images, can be placed in the `public/` directory.
+Ver `.env.example` en `backend/` y `frontend/.env.local` para la lista completa.
 
-## 🧞 Commands
+---
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+© 2026 Café Mi Tierra — [cafemitierra.com](https://cafemitierra.com)

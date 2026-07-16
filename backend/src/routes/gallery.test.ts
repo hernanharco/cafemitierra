@@ -14,9 +14,13 @@ vi.mock("../services/cloudinary.ts", () => ({
 
 // ── Helper para mockear queries de Drizzle ─────────────────
 function createDbMock(
-  overrides: { selectResult?: unknown[]; selectOneResult?: unknown | null } = {},
+  overrides: {
+    selectResult?: unknown[];
+    selectOneResult?: unknown | null;
+    updateResult?: unknown[];
+  } = {},
 ) {
-  const { selectResult = [], selectOneResult = null } = overrides;
+  const { selectResult = [], selectOneResult = null, updateResult = [] } = overrides;
 
   const db = {
     select: vi.fn(() => ({
@@ -24,6 +28,13 @@ function createDbMock(
         orderBy: vi.fn().mockResolvedValue(selectResult),
         where: vi.fn(() => ({
           limit: vi.fn().mockResolvedValue(selectOneResult ? [selectOneResult] : []),
+        })),
+      })),
+    })),
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(() => ({
+          returning: vi.fn().mockResolvedValue(updateResult),
         })),
       })),
     })),
@@ -105,6 +116,40 @@ describe("Gallery Routes — /api/gallery", () => {
     it("rechaza sin token de auth", async () => {
       const res = await app.request("/api/gallery");
       expect(res.status).toBe(401);
+    });
+  });
+
+  describe("PUT /api/gallery/:id (protegido)", () => {
+    it("actualiza metadatos de una imagen", async () => {
+      const { getDb } = await import("../db/index.ts");
+      const updatedImage = { ...mockImages[0], title: "Nuevo título", alt: "Nuevo alt" };
+      (getDb as ReturnType<typeof vi.fn>).mockReturnValue(
+        createDbMock({ updateResult: [updatedImage] }),
+      );
+
+      const res = await app.request("/api/gallery/1", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...authHeader },
+        body: JSON.stringify({ title: "Nuevo título", alt: "Nuevo alt" }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.title).toBe("Nuevo título");
+      expect(body.alt).toBe("Nuevo alt");
+    });
+
+    it("devuelve 404 si la imagen no existe", async () => {
+      const { getDb } = await import("../db/index.ts");
+      (getDb as ReturnType<typeof vi.fn>).mockReturnValue(createDbMock({ updateResult: [] }));
+
+      const res = await app.request("/api/gallery/999", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...authHeader },
+        body: JSON.stringify({ title: "Nuevo" }),
+      });
+
+      expect(res.status).toBe(404);
     });
   });
 

@@ -40,7 +40,9 @@ function createContactDbMock(
       })),
     })),
     delete: vi.fn(() => ({
-      where: vi.fn().mockResolvedValue(deleteResult),
+      where: vi.fn(() => ({
+        returning: vi.fn().mockResolvedValue(deleteResult || []),
+      })),
     })),
   };
 }
@@ -158,10 +160,43 @@ describe("Contact Routes — /api/contact", () => {
     });
   });
 
+  describe("PUT /api/contact/:id/read (admin, protegido)", () => {
+    it("marca un mensaje como leído", async () => {
+      const { getDb } = await import("../db/index.ts");
+      const readMessage = { ...mockMessages[0], read: true };
+      (getDb as ReturnType<typeof vi.fn>).mockReturnValue(
+        createContactDbMock({ updateResult: [readMessage] }),
+      );
+
+      const res = await app.request("/api/contact/1/read", {
+        method: "PUT",
+        headers: authHeader,
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.read).toBe(true);
+    });
+
+    it("devuelve 404 si el mensaje no existe", async () => {
+      const { getDb } = await import("../db/index.ts");
+      (getDb as ReturnType<typeof vi.fn>).mockReturnValue(
+        createContactDbMock({ updateResult: [] }),
+      );
+
+      const res = await app.request("/api/contact/999/read", {
+        method: "PUT",
+        headers: authHeader,
+      });
+
+      expect(res.status).toBe(404);
+    });
+  });
+
   describe("DELETE /api/contact/:id (admin, protegido)", () => {
     it("elimina un mensaje existente", async () => {
       const { getDb } = await import("../db/index.ts");
-      const mockDb = createContactDbMock();
+      const mockDb = createContactDbMock({ deleteResult: [{ id: 1 }] });
       (getDb as ReturnType<typeof vi.fn>).mockReturnValue(mockDb);
 
       const res = await app.request("/api/contact/1", {
@@ -171,6 +206,19 @@ describe("Contact Routes — /api/contact", () => {
 
       expect(res.status).toBe(200);
       expect(mockDb.delete).toHaveBeenCalled();
+    });
+
+    it("devuelve 404 si el mensaje no existe", async () => {
+      const { getDb } = await import("../db/index.ts");
+      const mockDb = createContactDbMock();
+      (getDb as ReturnType<typeof vi.fn>).mockReturnValue(mockDb);
+
+      const res = await app.request("/api/contact/999", {
+        method: "DELETE",
+        headers: authHeader,
+      });
+
+      expect(res.status).toBe(404);
     });
   });
 });

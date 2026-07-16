@@ -1,6 +1,9 @@
 import type { Context, Next } from "hono";
 import { verifyToken } from "../services/auth.ts";
 
+// Conjunto de rutas de autenticación públicas (exactas)
+const AUTH_PATHS = new Set(["/api/auth/status", "/api/auth/public-key", "/api/auth/dev-login"]);
+
 /**
  * Middleware de autenticación para rutas protegidas
  *
@@ -15,7 +18,7 @@ export async function authMiddleware(c: Context, next: Next) {
   if (path === "/api/contact" && method === "POST") return next(); // Enviar mensaje
   if (path === "/api/reviews" && method === "POST") return next(); // Enviar reseña
   if (path === "/api/reviews/public") return next(); // Reseñas visibles
-  if (path.startsWith("/api/auth")) return next(); // Auth endpoints
+  if (AUTH_PATHS.has(path)) return next(); // Auth endpoints (solo rutas exactas)
   if (path === "/api/site" && method === "GET") return next(); // Landing page pública
 
   // Buscar token: primero en header Authorization, después en cookie

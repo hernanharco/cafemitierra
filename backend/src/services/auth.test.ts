@@ -21,8 +21,8 @@ describe("Auth Service — verifyToken", () => {
     expect(user).toBeNull();
   });
 
-  it("decodifica un JWT válido con payload estándar", async () => {
-    // JWT con payload: { sub: "123", email: "test@test.com" }
+  it("decodifica un JWT en development con payload estándar (sin verificar firma)", async () => {
+    // En development: decodifica payload directamente
     const token =
       "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjMiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.signature";
     const user = await verifyToken(token);
@@ -31,7 +31,7 @@ describe("Auth Service — verifyToken", () => {
     expect(user!.email).toBe("test@test.com");
   });
 
-  it("decodifica un JWT con formato userId en lugar de sub", async () => {
+  it("decodifica un JWT en development con userId en lugar de sub", async () => {
     const header = btoa(JSON.stringify({ alg: "RS256" }));
     const payload = btoa(JSON.stringify({ userId: "user-456", email: "user@test.com" }));
     const token = `${header}.${payload}.fake-sig`;
@@ -49,6 +49,32 @@ describe("Auth Service — verifyToken", () => {
 
   it("retorna null para un token con payload inválido", async () => {
     const token = `${btoa("header")}.invalid-base64!.sig`;
+    const user = await verifyToken(token);
+    expect(user).toBeNull();
+  });
+
+  it("RECHAZA tokens sin firma válida en producción", async () => {
+    process.env.NODE_ENV = "production";
+    // JWT con payload correcto pero firma inválida — debe rechazar
+    const token =
+      "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjMiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.invalid-sig";
+    const user = await verifyToken(token);
+    expect(user).toBeNull();
+  });
+
+  it("RECHAZA dev-token en producción incluso si tiene el string exacto", async () => {
+    process.env.NODE_ENV = "production";
+    const user = await verifyToken("dev-token");
+    expect(user).toBeNull();
+  });
+
+  it("RECHAZA tokens en producción si no hay clave pública disponible", async () => {
+    process.env.NODE_ENV = "production";
+    // Sin setPublicKey() → getPublicKey() devuelve "" → verifySignature falla
+    const payload = btoa(JSON.stringify({ sub: "123", email: "test@test.com" }));
+    // Base64 de header RS256
+    const header = btoa(JSON.stringify({ alg: "RS256" }));
+    const token = `${header}.${payload}.dGhpcyBpcyBhIGZha2Ugc2lnbmF0dXJl`;
     const user = await verifyToken(token);
     expect(user).toBeNull();
   });

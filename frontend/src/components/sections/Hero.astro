@@ -10,12 +10,40 @@ const heroImages = business.hero_images || [
   { src: "/images/google-photo-10.jpg", alt: "Brunch de fin de semana" },
   { src: "/images/buenuelos.png", alt: "Buñuelos colombianos" },
 ];
+
+import HeroParticles from "../effects/HeroParticles.astro";
 ---
 
-<section class="relative w-full h-screen overflow-hidden">
-  <div class="carousel-container absolute inset-0">
+<section class="relative w-full h-screen overflow-hidden bg-marron">
+  <!-- Three.js particles background -->
+  <HeroParticles />
+
+  <!-- Gradient overlay entre particles e imágenes -->
+  <div class="absolute inset-0 bg-gradient-to-b from-marron/40 via-transparent to-marron/60 z-10"></div>
+
+  <!-- Carousel de imágenes (centradas, sin recortar) -->
+  <div class="carousel-container absolute inset-0 z-20 flex items-center justify-center">
     {heroImages.map((img) => (
-      <img src={img.src} alt={img.alt} class="carousel-slide absolute inset-0 w-full h-full object-contain" />
+      <div class="carousel-slide absolute inset-0 flex items-center justify-center p-8 md:p-16">
+        <img
+          src={img.src}
+          alt={img.alt}
+          loading="lazy"
+          class="w-full h-full object-contain max-w-5xl mx-auto rounded-2xl shadow-2xl"
+          style="filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4))"
+        />
+      </div>
+    ))}
+  </div>
+
+  <!-- Indicadores del carrusel -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+    {heroImages.map((_, i) => (
+      <button
+        class="carousel-dot w-2.5 h-2.5 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"
+        data-index={i}
+        aria-label={`Foto ${i + 1}`}
+      ></button>
     ))}
   </div>
 </section>
@@ -24,19 +52,50 @@ const heroImages = business.hero_images || [
   const container = document.querySelector('.carousel-container');
   if (container) {
     const slides = container.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.carousel-dot');
     let current = 0;
 
     function showSlide(index) {
       slides.forEach((slide, i) => {
         slide.style.opacity = i === index ? '1' : '0';
         slide.style.transition = 'opacity 1.2s ease-in-out';
+        slide.style.display = 'flex'; // Siempre visible para animación
+      });
+      // Resetear display en slides ocultos después de la transición
+      slides.forEach((slide, i) => {
+        if (i !== index) {
+          setTimeout(() => {
+            slide.style.display = 'none';
+          }, 1200);
+        }
+      });
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('bg-white', i === index);
+        dot.classList.toggle('bg-white/40', i !== index);
+        dot.classList.toggle('scale-125', i === index);
       });
       current = index;
     }
 
+    // Mostrar primer slide
     showSlide(0);
-    setInterval(() => {
+
+    // Click en dots
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        const index = Number(dot.dataset.index);
+        showSlide(index);
+        // Resetear intervalo al hacer click
+        clearInterval(interval);
+        interval = setInterval(() => {
+          showSlide((current + 1) % slides.length);
+        }, 5000);
+      });
+    });
+
+    // Auto-play
+    let interval = setInterval(() => {
       showSlide((current + 1) % slides.length);
-    }, 4000);
+    }, 5000);
   }
 </script>

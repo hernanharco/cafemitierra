@@ -1,0 +1,8 @@
+# CafeMiTierra — Robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://cafemitierra.com/sitemap-index.xml

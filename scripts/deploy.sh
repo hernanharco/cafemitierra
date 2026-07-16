@@ -62,8 +62,11 @@ echo ""
 
 # ── Paso 2: Git push ────────────────────────────────────────────
 echo -e "${YELLOW}[2/$TOTAL]${NC} Subir a GitHub..."
-git add .
-git commit -m "deploy: producción $(date +%Y-%m-%d)" 2>/dev/null || true
+# Verificar que no haya cambios sin trackear peligrosos
+if [ -n "$(git status --porcelain)" ]; then
+  git add -A
+  git commit -m "deploy: producción $(date +%Y-%m-%d)" 2>/dev/null || echo "  ℹ️  No hay cambios nuevos"
+fi
 git push origin main 2>&1 | tail -1
 echo -e "  ${GREEN}✅${NC} Código en GitHub"
 echo ""
@@ -84,12 +87,13 @@ ssh "$HETZNER_SSH" "
 echo -e "  ${GREEN}✅${NC} Contenedores actualizados"
 echo ""
 
-# ── Paso 5: Migraciones ─────────────────────────────────────────
+# ── Paso 5: Migraciones + Seed ───────────────────────────────────
 echo -e "${YELLOW}[5/$TOTAL]${NC} Migraciones de base de datos..."
 ssh "$HETZNER_SSH" "
   cd $HETZNER_PATH
   sleep 3
-  docker compose -f compose.prod.yaml exec -T api pnpm db:push 2>&1 || echo '⚠️ Migraciones omitidas'
+  docker compose -f compose.prod.yaml exec -T api pnpm db:migrate 2>&1 || echo '⚠️ Migraciones fallaron'
+  docker compose -f compose.prod.yaml exec -T api pnpm seed 2>&1 || echo '⚠️ Seed omitido (ya hay datos)'
 "
 echo -e "  ${GREEN}✅${NC} Base de datos actualizada"
 echo ""

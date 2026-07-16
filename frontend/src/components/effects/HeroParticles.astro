@@ -1,0 +1,199 @@
+---
+/**
+ * HeroParticles — Partículas Three.js flotantes
+ *
+ * Fondo animado para el Hero con puntos de colores
+ * que aparecen y desaparecen suavemente.
+ *
+ * Colores: rojo (#B53B3B), amarillo (#F2C84B), azul (#3565A7)
+ */
+---
+
+<canvas id="hero-particles-canvas" class="absolute inset-0 w-full h-full"></canvas>
+
+<script>
+  import * as THREE from "three";
+
+  const canvas = document.getElementById("hero-particles-canvas") as HTMLCanvasElement;
+  if (!canvas) throw new Error("Canvas not found");
+
+  // ── Config ────────────────────────────────────────────────
+  const COLORS = [
+    new THREE.Color("#B53B3B"), // rojo
+    new THREE.Color("#F2C84B"), // amarillo
+    new THREE.Color("#3565A7"), // azul
+  ];
+  const PARTICLE_COUNT = 40;
+  const MIN_SIZE = 4;
+  const MAX_SIZE = 16;
+  const FLOAT_SPEED = 0.02;
+  const FADE_DURATION = 2000; // ms para aparecer/desaparecer
+
+  // ── Scene setup ──────────────────────────────────────────
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+  camera.position.z = 30;
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    alpha: true,
+    antialias: true,
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  // ── Crear textura circular suave ─────────────────────────
+  function createCircleTexture(): THREE.CanvasTexture {
+    const size = 64;
+    const ctx = document.createElement("canvas").getContext("2d")!;
+    ctx.canvas.width = size;
+    ctx.canvas.height = size;
+
+    const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    gradient.addColorStop(0, "rgba(255,255,255,1)");
+    gradient.addColorStop(0.3, "rgba(255,255,255,0.8)");
+    gradient.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+
+    return new THREE.CanvasTexture(ctx.canvas);
+  }
+
+  const dotTexture = createCircleTexture();
+
+  // ── Partículas ───────────────────────────────────────────
+  interface Particle {
+    sprite: THREE.Sprite;
+    color: THREE.Color;
+    size: number;
+    vx: number;
+    vy: number;
+    phase: "appearing" | "floating" | "disappearing";
+    phaseStart: number;
+  }
+
+  const particles: Particle[] = [];
+
+  function createParticle(): Particle {
+    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const size = MIN_SIZE + Math.random() * (MAX_SIZE - MIN_SIZE);
+    const material = new THREE.SpriteMaterial({
+      map: dotTexture,
+      color,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(size, size, 1);
+    sprite.position.set(
+      (Math.random() - 0.5) * 50,
+      (Math.random() - 0.5) * 30,
+      (Math.random() - 0.5) * 10,
+    );
+
+    scene.add(sprite);
+
+    return {
+      sprite,
+      color,
+      size,
+      vx: (Math.random() - 0.5) * FLOAT_SPEED,
+      vy: (Math.random() - 0.5) * FLOAT_SPEED,
+      phase: "appearing",
+      phaseStart: Date.now(),
+    };
+  }
+
+  function initParticles() {
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      // Stagger initial appearance
+      setTimeout(() => {
+        particles.push(createParticle());
+      }, i * 200);
+    }
+  }
+
+  // ── Update loop ──────────────────────────────────────────
+  function updateParticles() {
+    const now = Date.now();
+
+    // Mantener el número de partículas constante
+    while (particles.length < PARTICLE_COUNT) {
+      particles.push(createParticle());
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      const elapsed = now - p.phaseStart;
+
+      switch (p.phase) {
+        case "appearing": {
+          p.sprite.material.opacity = Math.min(1, elapsed / FADE_DURATION);
+          if (elapsed >= FADE_DURATION) {
+            p.phase = "floating";
+            p.phaseStart = now;
+          }
+          break;
+        }
+        case "floating": {
+          p.sprite.material.opacity = 1;
+          p.sprite.position.x += p.vx;
+          p.sprite.position.y += p.vy;
+
+          // Cambiar dirección suavemente
+          if (Math.random() < 0.01) p.vx = (Math.random() - 0.5) * FLOAT_SPEED;
+          if (Math.random() < 0.01) p.vy = (Math.random() - 0.5) * FLOAT_SPEED;
+
+          // Limitar al área visible
+          if (Math.abs(p.sprite.position.x) > 28) p.vx *= -1;
+          if (Math.abs(p.sprite.position.y) > 18) p.vy *= -1;
+
+          // Después de un tiempo, empezar a desvanecer
+          if (elapsed > 5000 + Math.random() * 3000) {
+            p.phase = "disappearing";
+            p.phaseStart = now;
+          }
+          break;
+        }
+        case "disappearing": {
+          p.sprite.material.opacity = Math.max(0, 1 - elapsed / FADE_DURATION);
+          if (elapsed >= FADE_DURATION) {
+            // Reciclar: reposicionar y reaparecer
+            scene.remove(p.sprite);
+            p.sprite.material.dispose();
+
+            // Crear nueva partícula en otra posición
+            const newP = createParticle();
+            particles[i] = newP;
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  // ── Resize ───────────────────────────────────────────────
+  function resize() {
+    const w = canvas.parentElement?.clientWidth || window.innerWidth;
+    const h = canvas.parentElement?.clientHeight || window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+
+  window.addEventListener("resize", resize);
+  resize();
+
+  // ── Animation loop ───────────────────────────────────────
+  function animate() {
+    requestAnimationFrame(animate);
+    updateParticles();
+    renderer.render(scene, camera);
+  }
+
+  initParticles();
+  animate();
+</script>

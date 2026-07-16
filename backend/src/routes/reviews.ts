@@ -1,21 +1,9 @@
-import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { zValidator } from "@hono/zod-validator";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const BUSINESS_JSON = resolve(__dirname, "../../../frontend/src/data/business.json");
-
-function readBusiness() {
-  return JSON.parse(readFileSync(BUSINESS_JSON, "utf-8"));
-}
-
-function writeBusiness(data: unknown) {
-  writeFileSync(BUSINESS_JSON, JSON.stringify(data, null, 2), "utf-8");
-}
+import { getDb } from "../db/index.ts";
+import { reviews } from "../db/schema.ts";
 
 const router = new Hono().basePath("/api/reviews");
 
@@ -27,68 +15,85 @@ const reviewSchema = z.object({
   visible: z.boolean().optional().default(false),
 });
 
+const reviewUpdateSchema = reviewSchema.partial();
+
 // ── GET /api/reviews — Todas las reseñas (admin) ────────────
 router.get("/", async (c) => {
-  const data = readBusiness();
-  return c.json(data.reviews || []);
+  const db = getDb();
+  const all = await db.select().from(reviews).orderBy(reviews.createdAt);
+  return c.json(all);
 });
 
 // ── GET /api/reviews/public — Solo visibles (landing) ──────
 router.get("/public", async (c) => {
-  const data = readBusiness();
-  const visible = (data.reviews || []).filter((r: { visible?: boolean }) => r.visible !== false);
+  const db = getDb();
+  const visible = await db
+    .select()
+    .from(reviews)
+    .where(eq(reviews.visible, true))
+    .orderBy(reviews.createdAt);
   return c.json(visible);
 });
 
 // ── POST /api/reviews — Enviar reseña (público) ────────────
 router.post("/", zValidator("json", reviewSchema), async (c) => {
   const data = c.req.valid("json");
-  const business = readBusiness();
+  const db = getDb();
 
-  const reviews = business.reviews || [];
-  reviews.push({
-    ...data,
-    source: data.source || "web",
-    visible: false, // Siempre pendiente de aprobación
-  });
+  const [review] = await db
+    .insert(reviews)
+    .values({
+      author: data.author,
+      rating: data.rating,
+      text: data.text,
+      source: data.source || "web",
+      visible: false, // Siempre pendiente de aprobación
+    })
+    .returning();
 
-  business.reviews = reviews;
-  writeBusiness(business);
-
-  return c.json({ success: true, message: "Reseña recibida. Gracias!" }, 201);
+  return c.json({ success: true, message: "Reseña recibida. Gracias!", review }, 201);
 });
 
-// ── PUT /api/reviews/:index — Actualizar reseña (admin) ────
-router.put("/:index", zValidator("json", reviewSchema.partial()), async (c) => {
-  const index = Number(c.req.param("index"));
+// ── PUT /api/reviews/:id — Actualizar reseña (admin) ────────
+router.put("/:id", zValidator("json", reviewUpdateSchema), async (c) => {
+  const id = Number(c.req.param("id"));
+  if (Number.isNaN(id)) {
+    return c.json({ error: "ID inválido" }, 400);
+  }
+
   const data = c.req.valid("json");
-  const business = readBusiness();
+  const db = getDb();
 
-  const reviews = business.reviews || [];
-  if (index < 0 || index >= reviews.length) {
+  const [updated] = await db
+    .update(reviews)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(reviews.id, id))
+    .returning();
+
+  if (!updated) {
     return c.json({ error: "Reseña no encontrada" }, 404);
   }
 
-  reviews[index] = { ...reviews[index], ...data };
-  business.reviews = reviews;
-  writeBusiness(business);
-
-  return c.json(reviews[index]);
+  return c.json(updated);
 });
 
-// ── DELETE /api/reviews/:index — Eliminar reseña (admin) ───
-router.delete("/:index", async (c) => {
-  const index = Number(c.req.param("index"));
-  const business = readBusiness();
-
-  const reviews = business.reviews || [];
-  if (index < 0 || index >= reviews.length) {
-    return c.json({ error: "Reseña no encontrada" }, 404);
+// ── DELETE /api/reviews/:id — Eliminar reseña (admin) ───────
+router.delete("/:id", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (Number.isNaN(id)) {
+    return c.json({ error: "ID inválido" }, 400);
   }
 
-  reviews.splice(index, 1);
-  business.reviews = reviews;
-  writeBusiness(business);
+  const db = getDb();
+
+  const [deleted] = await db
+    .delete(reviews)
+    .where(eq(reviews.id, id))
+    .returning({ id: reviews.id });
+
+  if (!deleted) {
+    return c.json({ error: "Reseña no encontrada" }, 404);
+  }
 
   return c.json({ success: true });
 });

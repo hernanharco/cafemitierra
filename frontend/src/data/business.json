@@ -15,7 +15,7 @@
       "alt": "Buñuelos colombianos"
     },
     {
-      "src": "https://res.cloudinary.com/dxyk76jhu/image/upload/v1782756583/cafemitierra/hero/iyprzsacfirpsry2ionj.jpg",
+      "src": "https://res.cloudinary.com/dxyk76jhu/image/upload/v1784217336/cafemitierra/hero/hzxrkhozu6ba6xvpfnug.jpg",
       "alt": "Imagen del carrusel"
     }
   ],
@@ -107,8 +107,7 @@
     "Especialidad en café colombiano",
     "Panadería artesanal",
     "Desayunos y brunch",
-    "Productos para llevar",
-    "probando"
+    "Productos para llevar"
   ],
   "services_title": "Nuestros Servicios",
   "services_subtitle": "Lo que ofrecemos",
@@ -137,22 +136,6 @@
       "description": "Brunch los fines de semana con lo mejor de la cocina colombiana.",
       "icon": "🥂",
       "image": "/images/google-photo-10.jpg"
-    }
-  ],
-  "reviews": [
-    {
-      "author": "Google Maps",
-      "rating": 4.3,
-      "text": "Un rincón colombiano en Avilés. El café es espectacular y la atención inmejorable.",
-      "source": "Google Maps",
-      "visible": true
-    },
-    {
-      "author": "María",
-      "rating": 5,
-      "text": "El mejor café de Avilés!",
-      "source": "web",
-      "visible": false
     }
   ],
   "about": {

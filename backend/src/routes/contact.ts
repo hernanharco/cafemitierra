@@ -33,11 +33,15 @@ router.get("/", async (c) => {
 router.put("/:id/read", async (c) => {
   const db = getDb();
   const id = Number(c.req.param("id"));
+  if (Number.isNaN(id)) return c.json({ error: "ID inválido" }, 400);
+
   const [msg] = await db
     .update(contactMessages)
     .set({ read: true })
     .where(eq(contactMessages.id, id))
     .returning();
+
+  if (!msg) return c.json({ error: "Mensaje no encontrado" }, 404);
   return c.json(msg);
 });
 
@@ -45,7 +49,14 @@ router.put("/:id/read", async (c) => {
 router.delete("/:id", async (c) => {
   const db = getDb();
   const id = Number(c.req.param("id"));
-  await db.delete(contactMessages).where(eq(contactMessages.id, id));
+  if (Number.isNaN(id)) return c.json({ error: "ID inválido" }, 400);
+
+  const [deleted] = await db
+    .delete(contactMessages)
+    .where(eq(contactMessages.id, id))
+    .returning({ id: contactMessages.id });
+
+  if (!deleted) return c.json({ error: "Mensaje no encontrado" }, 404);
   return c.json({ success: true });
 });
 

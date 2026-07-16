@@ -4,18 +4,17 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copiar dependencias primero
-COPY package.json pnpm-workspace.yaml ./
+# Copiar archivos de dependencias primero (cache de Docker)
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/package.json
 
-# Instalar dependencias permitiendo todos los builds
-RUN pnpm install --filter backend --no-frozen-lockfile --ignore-scripts 2>&1
+# Instalar dependencias con lockfile congelado (reproducible)
+RUN pnpm install --filter backend --frozen-lockfile
 
-# Ejecutar builds necesarios
-RUN pnpm rebuild esbuild 2>&1 || true
-
-# Copiar código del backend y datos del frontend
+# Copiar código del backend
 COPY backend/ ./backend/
+
+# Copiar datos del frontend (business.json necesario para site API)
 COPY frontend/src/data/ ./frontend/src/data/
 
 EXPOSE 8001

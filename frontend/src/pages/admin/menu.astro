@@ -1,6 +1,22 @@
 ---
 export const prerender = false;
-const redirect = `${Astro.url.origin}/admin`;
-const script = `window.location.href = '${redirect}';`;
+
+import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
-<html><head><meta charset="UTF-8"><title>Redirigiendo...</title><script>{script}</script></head><body><p><a href={redirect}>Ir al Dashboard</a></p></body></html>
+
+<AdminLayout title="Menú" currentPath={Astro.url.pathname}>
+  <div class="flex flex-col items-center justify-center py-16 text-center">
+    <div class="text-6xl mb-4">📋</div>
+    <h2 class="text-2xl font-bold text-marron mb-2">Gestión de Menú</h2>
+    <p class="text-marron/60 max-w-md mb-8">
+      Esta sección está en desarrollo. Pronto podrás gestionar el menú
+      de comidas y bebidas desde aquí.
+    </p>
+    <a
+      href="/admin"
+      class="inline-flex items-center gap-2 px-6 py-3 bg-rojo text-white font-medium rounded-lg hover:bg-rojo-dark transition-colors"
+    >
+      ← Volver al Dashboard
+    </a>
+  </div>
+</AdminLayout>

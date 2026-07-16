@@ -1,6 +1,171 @@
 ---
 export const prerender = false;
-const redirect = `${Astro.url.origin}/admin`;
-const script = `window.location.href = '${redirect}';`;
+
+import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
-<html><head><meta charset="UTF-8"><title>Redirigiendo...</title><script>{script}</script></head><body><p><a href={redirect}>Ir al Dashboard</a></p></body></html>
+
+<AdminLayout title="Mensajes" currentPath={Astro.url.pathname}>
+  <div class="mb-4">
+    <p class="text-sm text-zinc-500">
+      Mensajes recibidos del formulario de contacto de la web.
+    </p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="flex gap-2 mb-4">
+    <button id="filter-all" class="filter-btn active" data-filter="all">Todos</button>
+    <button id="filter-unread" class="filter-btn" data-filter="unread">No leídos</button>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Mensaje</th>
+          <th class="w-24">Estado</th>
+          <th class="w-24">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="messages-table-body">
+        <tr>
+          <td colspan="6" class="text-center text-zinc-400 py-8">Cargando...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>
+
+<script>
+  let currentFilter = 'all';
+
+  function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
+  async function api(path, opts = {}) {
+    const token = getToken();
+    const res = await fetch(path, {
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
+      credentials: 'include',
+      ...opts,
+    });
+    if (!res.ok) throw new Error(`Error: ${res.status}`);
+    return res.json();
+  }
+
+  async function loadMessages(filter = 'all') {
+    const tbody = document.getElementById('messages-table-body');
+    try {
+      const messages = await api('/api/contact');
+      currentFilter = filter;
+
+      let filtered = messages;
+      if (filter === 'unread') {
+        filtered = messages.filter(m => !m.read);
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-zinc-400 py-8">No hay mensajes ${filter === 'unread' ? 'sin leer' : ''}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(m => {
+        const created = m.createdAt ? new Date(m.createdAt).toLocaleString() : '—';
+        return `
+        <tr class="${m.read ? '' : 'bg-amber-50/50 font-medium'}">
+          <td class="text-xs text-zinc-400 whitespace-nowrap">${created}</td>
+          <td>${escapeHtml(m.name)}</td>
+          <td class="text-zinc-500">${escapeHtml(m.email)}</td>
+          <td class="max-w-xs truncate text-zinc-500" title="${escapeHtml(m.message)}">${escapeHtml(m.message)}</td>
+          <td>
+            ${m.read
+              ? '<span class="badge badge-read">✓ Leído</span>'
+              : '<span class="badge badge-new">● Nuevo</span>'
+            }
+          </td>
+          <td>
+            <div class="action-buttons">
+              ${!m.read
+                ? `<button class="btn-icon read-btn" data-id="${m.id}" title="Marcar como leído">✓</button>`
+                : ''
+              }
+              <button class="btn-icon delete-btn" data-id="${m.id}" title="Eliminar">🗑️</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+
+      tbody.querySelectorAll('.read-btn').forEach(b =>
+        b.addEventListener('click', () => markAsRead(Number(b.dataset.id)))
+      );
+      tbody.querySelectorAll('.delete-btn').forEach(b =>
+        b.addEventListener('click', () => deleteMessage(Number(b.dataset.id)))
+      );
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-8">Error: ${err.message}</td></tr>`;
+    }
+  }
+
+  async function markAsRead(id) {
+    try {
+      await api(`/api/contact/${id}/read`, { method: 'PUT' });
+      loadMessages(currentFilter);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  async function deleteMessage(id) {
+    if (!confirm('¿Eliminar este mensaje?')) return;
+    try {
+      await api(`/api/contact/${id}`, { method: 'DELETE' });
+      loadMessages(currentFilter);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Init
+  document.getElementById('filter-all').addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter-all').classList.add('active');
+    loadMessages('all');
+  });
+  document.getElementById('filter-unread').addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter-unread').classList.add('active');
+    loadMessages('unread');
+  });
+
+  loadMessages('all');
+</script>
+
+<style is:global>
+  .table-container { background: white; border-radius: 0.75rem; border: 1px solid #e4e4e7; overflow: hidden; }
+  .data-table { width: 100%; font-size: 0.875rem; }
+  .data-table th { text-align: left; padding: 0.75rem 1rem; background: #fafafa; color: #52525b; font-weight: 500; border-bottom: 1px solid #e4e4e7; }
+  .data-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f4f4f5; }
+  .action-buttons { display: flex; gap: 0.25rem; }
+  .btn-icon { padding: 0.375rem; border-radius: 0.375rem; cursor: pointer; background: transparent; border: none; font-size: 0.875rem; }
+  .btn-icon:hover { background: #f4f4f5; }
+
+  .badge { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+  .badge-read { background: #f4f4f5; color: #71717a; }
+  .badge-new { background: #dbeafe; color: #1d4ed8; }
+
+  .filter-btn {
+    padding: 0.375rem 0.75rem; font-size: 0.875rem; border-radius: 0.5rem; border: 1px solid #e4e4e7;
+    background: white; color: #52525b; cursor: pointer; transition: all 0.2s;
+  }
+  .filter-btn:hover { background: #fafafa; }
+  .filter-btn.active {
+    background: var(--color-rojo, #B53B3B); color: white; border-color: var(--color-rojo, #B53B3B);
+  }
+  .filter-btn.active:hover { background: var(--color-rojo-dark, #8A2E2E); }
+</style>
