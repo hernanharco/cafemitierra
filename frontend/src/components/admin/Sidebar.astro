@@ -14,7 +14,7 @@ const navItems = [
   { href: "/admin/gallery", label: "Galería", icon: "📸" },
   { href: "/admin/reviews", label: "Reseñas", icon: "⭐" },
   { href: "/admin/info", label: "Información / Contacto", icon: "ℹ️" },
-  { href: "/admin/seo", label: "SEO", icon: "🔍" },
+  { href: "/admin/inventario", label: "Inventario POS", icon: "📦" },
 ];
 
 function isActive(href: string) {
@@ -38,9 +38,10 @@ function isActive(href: string) {
     <ul>
       {navItems.map((item) => (
         <li class:list={{ active: isActive(item.href) }}>
-          <a href={item.href}>
+          <a href={item.href} class:list={{ "external-link": item.external }}>
             <span class="nav-icon">{item.icon}</span>
             <span class="nav-label">{item.label}</span>
+            {item.external && <span class="nav-badge">↗</span>}
           </a>
         </li>
       ))}
@@ -48,7 +49,7 @@ function isActive(href: string) {
   </nav>
 
   <div class="sidebar-footer">
-    <a href="/" class="back-to-site" target="_blank">
+    <a href="/" class="back-to-site">
       <span>←</span>
       <span>Ver sitio</span>
     </a>
@@ -81,6 +82,8 @@ function isActive(href: string) {
   .sidebar-nav li a { @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors no-underline; }
   .sidebar-nav li.active a { @apply text-amber-400 bg-amber-400/10 font-medium; }
   .nav-icon { @apply text-lg; }
+  .nav-badge { @apply ml-auto text-xs text-amber-500/60; }
+  .external-link { @apply border border-dashed border-zinc-700/50; }
   .sidebar-footer { @apply border-t border-zinc-800 p-3 space-y-1; }
   .back-to-site { @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors no-underline; }
   .logout-btn { @apply w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors cursor-pointer bg-transparent border-none; }

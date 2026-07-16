@@ -18,19 +18,15 @@ import HeroParticles from "../effects/HeroParticles.astro";
   <!-- Three.js particles background -->
   <HeroParticles />
 
-  <!-- Gradient overlay entre particles e imágenes -->
-  <div class="absolute inset-0 bg-gradient-to-b from-marron/40 via-transparent to-marron/60 z-10"></div>
-
   <!-- Carousel de imágenes (centradas, sin recortar) -->
   <div class="carousel-container absolute inset-0 z-20 flex items-center justify-center">
     {heroImages.map((img) => (
-      <div class="carousel-slide absolute inset-0 flex items-center justify-center p-8 md:p-16">
+      <div class="carousel-slide absolute inset-0 flex items-center justify-center">
         <img
           src={img.src}
           alt={img.alt}
           loading="lazy"
-          class="w-full h-full object-contain max-w-5xl mx-auto rounded-2xl shadow-2xl"
-          style="filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4))"
+          class="w-full h-full object-contain max-w-5xl mx-auto"
         />
       </div>
     ))}

@@ -41,8 +41,8 @@ const todayIndex = today;
             Horario
           </h3>
           <div class="space-y-3">
-            {business.hours.map((h) => {
-              const isToday = business.hours.indexOf(h) === todayIndex;
+            {(business.hours || []).map((h) => {
+              const isToday = (business.hours || []).indexOf(h) === todayIndex;
               return (
                 <div class={`flex items-center justify-between py-2 px-4 rounded-lg transition-colors ${isToday ? 'bg-amarillo/10 border border-amarillo/20' : 'hover:bg-cream/5'}`}>
                   <span class={`font-medium ${isToday ? 'text-amarillo' : 'text-cream/80'}`}>
@@ -70,7 +70,7 @@ const todayIndex = today;
               </svg>
               Dirección
             </h3>
-            <p class="text-cream/70 text-lg">{business.address.full}</p>
+            <p class="text-cream/70 text-lg">{business.address?.full || `${business.address?.street || ''}, ${business.address?.city || ''}`}</p>
           </div>
           <MapEmbed />
         </div>

@@ -248,7 +248,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       modal.close();
       render();
     } catch (err) {
-      alert('Error: ' + err.message);
+      window.showToast('Error: ' + err.message, { type: 'error' });
     }
   });
 
@@ -259,7 +259,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       await api('/api/site/services', { method: 'PUT', body: JSON.stringify(services) });
       render();
     } catch (err) {
-      alert('Error: ' + err.message);
+      window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }
 

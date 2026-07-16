@@ -1,0 +1,18 @@
+---
+export const prerender = false;
+
+import AdminLayout from "../../layouts/AdminLayout.astro";
+
+const INVENTARIO_URL = "http://localhost:5176";
+---
+
+<AdminLayout title="Inventario POS" currentPath={Astro.url.pathname}>
+  <div class="w-full h-[calc(100vh-8rem)]">
+    <iframe
+      src={INVENTARIO_URL}
+      class="w-full h-full border-0 rounded-xl"
+      title="Inventario POS"
+      allow="clipboard-read; clipboard-write"
+    ></iframe>
+  </div>
+</AdminLayout>

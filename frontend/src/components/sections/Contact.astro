@@ -73,8 +73,8 @@ import Button from "../ui/Button.astro";
               </svg>
             </div>
             <h3 class="font-bold text-marron text-lg mb-1">Dirección</h3>
-            <p class="text-marron/70">{business.address.street}</p>
-            <p class="text-marron/50 text-sm">{business.address.city}, {business.address.province}</p>
+            <p class="text-marron/70">{business.address?.street || ''}</p>
+            <p class="text-marron/50 text-sm">{business.address?.city || ''}{business.address?.province ? ', ' + business.address.province : ''}</p>
           </a>
 
           <!-- Instagram -->

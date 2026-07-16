@@ -8,7 +8,7 @@ const { business } = Astro.props;
 import ScrollReveal from "../effects/ScrollReveal.astro";
 import StarRating from "../ui/StarRating.astro";
 
-const visibleReviews = business.reviews.filter((r) => r.visible !== false);
+const visibleReviews = (business.reviews || []).filter((r) => r.visible !== false);
 ---
 
 <section class="py-24 px-6 bg-cream">

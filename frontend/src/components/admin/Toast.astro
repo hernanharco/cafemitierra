@@ -1,0 +1,140 @@
+---
+/**
+ * Toast — Sistema de notificaciones para el admin
+ *
+ * Incluye el CSS y JS necesario. Se importa en AdminLayout.
+ * USO:
+ *   showToast('Mensaje', { type: 'success' | 'error' | 'info', duration: 4000 })
+ */
+---
+
+<div id="toast-container" class="toast-container"></div>
+
+<script>
+  declare global {
+    interface Window {
+      showToast: (message: string, opts?: { type?: "success" | "error" | "info"; duration?: number }) => void;
+    }
+  }
+
+  const COLORS = {
+    success: { bg: "#16a34a", border: "#15803d", icon: "✓" },
+    error: { bg: "#dc2626", border: "#b91c1c", icon: "✗" },
+    info: { bg: "#2563eb", border: "#1d4ed8", icon: "ℹ" },
+  };
+
+  window.showToast = function showToast(
+    message: string,
+    opts: { type?: "success" | "error" | "info"; duration?: number } = {},
+  ) {
+    const type = opts.type || "info";
+    const duration = opts.duration || 4000;
+    const color = COLORS[type];
+
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.innerHTML = `
+      <span class="toast-icon">${color.icon}</span>
+      <span class="toast-message">${escapeHtml(message)}</span>
+      <button class="toast-close" aria-label="Cerrar">&times;</button>
+    `;
+    toast.style.setProperty("--toast-bg", color.bg);
+    toast.style.setProperty("--toast-border", color.border);
+
+    // Cerrar al hacer click
+    toast.querySelector(".toast-close")?.addEventListener("click", () => remove(toast));
+
+    container.appendChild(toast);
+
+    // Auto-remover después de la duración
+    const timer = setTimeout(() => remove(toast), duration);
+
+    function remove(el: HTMLElement) {
+      clearTimeout(timer);
+      el.style.opacity = "0";
+      el.style.transform = "translateX(100%)";
+      setTimeout(() => el.remove(), 300);
+    }
+  };
+
+  function escapeHtml(text: string): string {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+</script>
+
+<style>
+  .toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 24rem;
+    pointer-events: none;
+  }
+
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--toast-bg, #2563eb);
+    border-left: 4px solid var(--toast-border, #1d4ed8);
+    border-radius: 0.5rem;
+    color: white;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    pointer-events: auto;
+    animation: toast-in 0.3s ease-out;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .toast-icon {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: bold;
+  }
+
+  .toast-message {
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .toast-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  .toast-close:hover { color: white; }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+</style>

@@ -175,7 +175,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   document.getElementById('image-upload-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!fileInput.files.length) { alert('Seleccioná una imagen'); return; }
+    if (!fileInput.files.length) { window.showToast('Seleccioná una imagen', { type: 'info' }); return; }
     try {
       const formData = new FormData();
       formData.append('file', fileInput.files[0]);
@@ -199,7 +199,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       modal.close();
       resetUpload();
     } catch (err) {
-      alert('Error: ' + err.message);
+      window.showToast('Error: ' + err.message, { type: 'error' });
     }
   });
 

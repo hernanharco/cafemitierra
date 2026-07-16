@@ -130,7 +130,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   document.getElementById('upload-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!fileInput.files.length) { alert('Seleccioná una imagen'); return; }
+    if (!fileInput.files.length) { window.showToast('Seleccioná una imagen', { type: 'info' }); return; }
     submitBtn.disabled = true;
     submitBtn.textContent = '⏳ Subiendo...';
     try {
@@ -162,7 +162,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       loadGallery();
       resetForm();
     } catch (err) {
-      alert('Error: ' + err.message);
+      window.showToast('Error: ' + err.message, { type: 'error' });
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = '⬆️ Subir';
@@ -188,7 +188,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       await api('/api/site', { method: 'PUT', body: JSON.stringify({ gallery_images: images }) });
       loadGallery();
     } catch (err) {
-      alert('Error: ' + err.message);
+      window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }
 

@@ -87,7 +87,7 @@ const AUTHCORE_URL =
             window.location.href = '/admin';
           }
         } catch (err) {
-          alert('Error de conexión con el backend. ¿Está corriendo el servidor?');
+          window.showToast('Error de conexión con el backend', { type: 'error', duration: 6000 });
           console.error(err);
         }
       });

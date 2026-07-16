@@ -1,7 +1,8 @@
 ---
 export const prerender = false;
 
-import AdminLayout from "../../layouts/AdminLayout.astro";
+// SEO ahora se maneja desde servicio externo
+return Astro.redirect("/admin");
 ---
 
 <AdminLayout title="SEO" currentPath={Astro.url.pathname}>

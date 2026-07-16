@@ -60,7 +60,7 @@ const seo = business.seo;
         "ratingValue": business.rating,
         "reviewCount": business.reviews_count
       },
-      "openingHoursSpecification": business.hours.map(h => ({
+      "openingHoursSpecification": (business.hours || []).map(h => ({
         "@type": "OpeningHoursSpecification",
         "dayOfWeek": h.day,
         "opens": h.hours.split('–')[0].trim(),

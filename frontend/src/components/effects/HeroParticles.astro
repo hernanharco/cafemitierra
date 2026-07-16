@@ -23,11 +23,12 @@
     new THREE.Color("#F2C84B"), // amarillo
     new THREE.Color("#3565A7"), // azul
   ];
-  const PARTICLE_COUNT = 40;
-  const MIN_SIZE = 4;
-  const MAX_SIZE = 16;
-  const FLOAT_SPEED = 0.02;
-  const FADE_DURATION = 2000; // ms para aparecer/desaparecer
+  // Más partículas y más grandes para que no haya espacios vacíos
+  const PARTICLE_COUNT = 80;
+  const MIN_SIZE = 6;
+  const MAX_SIZE = 20;
+  const FLOAT_SPEED = 0.03;
+  const FADE_DURATION = 2500; // ms para aparecer/desaparecer
 
   // ── Scene setup ──────────────────────────────────────────
   const scene = new THREE.Scene();
@@ -83,15 +84,15 @@
       transparent: true,
       opacity: 0,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
     });
 
     const sprite = new THREE.Sprite(material);
     sprite.scale.set(size, size, 1);
     sprite.position.set(
-      (Math.random() - 0.5) * 50,
-      (Math.random() - 0.5) * 30,
-      (Math.random() - 0.5) * 10,
+      (Math.random() - 0.5) * 60,
+      (Math.random() - 0.5) * 40,
+      (Math.random() - 0.5) * 15,
     );
 
     scene.add(sprite);
@@ -110,9 +111,10 @@
   function initParticles() {
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       // Stagger initial appearance
+      // Aparecen más rápido para llenar el espacio
       setTimeout(() => {
         particles.push(createParticle());
-      }, i * 200);
+      }, i * 60);
     }
   }
 
@@ -148,8 +150,8 @@
           if (Math.random() < 0.01) p.vy = (Math.random() - 0.5) * FLOAT_SPEED;
 
           // Limitar al área visible
-          if (Math.abs(p.sprite.position.x) > 28) p.vx *= -1;
-          if (Math.abs(p.sprite.position.y) > 18) p.vy *= -1;
+          if (Math.abs(p.sprite.position.x) > 35) p.vx *= -1;
+          if (Math.abs(p.sprite.position.y) > 22) p.vy *= -1;
 
           // Después de un tiempo, empezar a desvanecer
           if (elapsed > 5000 + Math.random() * 3000) {

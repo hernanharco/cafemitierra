@@ -111,7 +111,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       await api(`/api/contact/${id}/read`, { method: 'PUT' });
       loadMessages(currentFilter);
     } catch (err) {
-      alert('Error: ' + err.message);
+      window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }
 
@@ -121,7 +121,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       await api(`/api/contact/${id}`, { method: 'DELETE' });
       loadMessages(currentFilter);
     } catch (err) {
-      alert('Error: ' + err.message);
+      window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }
 

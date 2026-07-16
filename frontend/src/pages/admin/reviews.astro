@@ -98,7 +98,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       });
       loadReviews();
     } catch (err) {
-      alert('Error: ' + err.message);
+      window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }
 
@@ -108,7 +108,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       await api(`/api/reviews/${id}`, { method: 'DELETE' });
       loadReviews();
     } catch (err) {
-      alert('Error: ' + err.message);
+      window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }
 
