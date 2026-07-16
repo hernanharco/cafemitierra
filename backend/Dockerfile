@@ -8,9 +8,8 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/package.json
 
-# Aprobar builds de esbuild (necesario para tsx)
-RUN pnpm config set onlyBuiltDependencies 'esbuild' && \
-    pnpm install --filter backend --frozen-lockfile
+# Instalar dependencias con lockfile congelado (reproducible)
+RUN pnpm install --filter backend --frozen-lockfile
 
 # Copiar código del backend
 COPY backend/ ./backend/
