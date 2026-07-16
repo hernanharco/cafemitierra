@@ -3,7 +3,8 @@ export const prerender = false;
 
 import AdminLayout from "../../layouts/AdminLayout.astro";
 
-const INVENTARIO_URL = "http://localhost:5176";
+// En desarrollo usa localhost, en producción usa la URL de Vercel
+const INVENTARIO_URL = import.meta.env.PUBLIC_INVENTARIO_URL || "http://localhost:5176";
 ---
 
 <AdminLayout title="Inventario POS" currentPath={Astro.url.pathname}>
