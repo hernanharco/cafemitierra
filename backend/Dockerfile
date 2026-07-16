@@ -8,14 +8,14 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/package.json
 
-# Instalar dependencias con lockfile congelado (reproducible)
-RUN pnpm install --filter backend --frozen-lockfile
+# Instalar dependencias (sin scripts, reconstruir esbuild después)
+RUN pnpm install --filter backend --no-frozen-lockfile --ignore-scripts
+
+# Reconstruir esbuild (necesario para tsx en Alpine)
+RUN pnpm rebuild esbuild
 
 # Copiar código del backend
 COPY backend/ ./backend/
-
-# Copiar datos del frontend (ya no se necesita para la API)
-# COPY frontend/src/data/ ./frontend/src/data/
 
 EXPOSE 8001
 
