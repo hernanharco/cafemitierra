@@ -8,14 +8,15 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/package.json
 
-# Instalar dependencias con lockfile congelado (reproducible)
-RUN pnpm install --filter backend --frozen-lockfile
+# Aprobar builds de esbuild (necesario para tsx)
+RUN pnpm config set onlyBuiltDependencies 'esbuild' && \
+    pnpm install --filter backend --frozen-lockfile
 
 # Copiar código del backend
 COPY backend/ ./backend/
 
-# Copiar datos del frontend (business.json necesario para site API)
-COPY frontend/src/data/ ./frontend/src/data/
+# Copiar datos del frontend (ya no se necesita para la API)
+# COPY frontend/src/data/ ./frontend/src/data/
 
 EXPOSE 8001
 
