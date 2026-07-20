@@ -111,11 +111,10 @@ export async function verifyToken(
   }
 
   // ── MODO PRODUCCIÓN ──────────────────────────────────────────
-  // PASO 1: Verificar firma RS256 contra authCore
   const signatureValid = await verifySignature(token);
   if (!signatureValid) return null;
 
-  // PASO 2: Decodificar payload (solo después de firma válida)
+  // Decodificar payload (solo después de firma válida)
   const payload = decodePayload(token);
   if (!payload?.userId || !payload?.email) return null;
 

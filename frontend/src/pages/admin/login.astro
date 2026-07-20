@@ -11,6 +11,9 @@ import "../../styles/global.css";
 const BACKEND_URL = import.meta.env.PUBLIC_BACKEND_URL || "http://localhost:8001";
 const AUTHCORE_URL =
   import.meta.env.PUBLIC_AUTHCORE_URL || "https://api-authcore.elrincondeharco.com";
+
+// Solo mostrar acceso de desarrollo en entorno local
+const showDevLogin = import.meta.env.DEV;
 ---
 
 <!DOCTYPE html>
@@ -45,18 +48,22 @@ const AUTHCORE_URL =
             <span>Continuar con Google</span>
           </button>
 
-          <div class="divider">
-            <span>o</span>
-          </div>
+          {showDevLogin && (
+            <>
+              <div class="divider">
+                <span>o</span>
+              </div>
 
-          <button id="dev-login-btn" class="btn-dev">
-            <span>🔑</span>
-            <span>Acceso de Desarrollo</span>
-          </button>
+              <button id="dev-login-btn" class="btn-dev">
+                <span>🔑</span>
+                <span>Acceso de Desarrollo</span>
+              </button>
 
-          <p class="text-xs text-zinc-400 mt-4 text-center">
-            El acceso de desarrollo es solo para pruebas locales
-          </p>
+              <p class="text-xs text-zinc-400 mt-4 text-center">
+                El acceso de desarrollo es solo para pruebas locales
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

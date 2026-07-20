@@ -42,6 +42,7 @@ services:
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
       CORS_ORIGINS: ${CORS_ORIGINS}
+      AUTHCORE_PUBLIC_KEY_URL: ${AUTHCORE_PUBLIC_KEY_URL}
     depends_on:
       postgres:
         condition: service_healthy
