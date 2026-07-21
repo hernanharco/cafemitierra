@@ -34,6 +34,11 @@ jobs:
           node-version: "22"
           cache: "pnpm"
 
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.0 --activate
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -64,6 +69,11 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
+
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.0 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -97,6 +107,11 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
+
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.0 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -132,6 +147,11 @@ jobs:
           node-version: "22"
           cache: "pnpm"
 
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.0 --activate
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -164,6 +184,11 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
+
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.0 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -212,6 +237,11 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
+
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.0 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
