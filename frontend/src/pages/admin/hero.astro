@@ -95,7 +95,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   // ── Eliminar imagen ──────────────────────────────────────────
   async function removeImage(index: number) {
-    if (!confirm('¿Eliminar esta imagen del carrusel?')) return;
+    const confirmed = await window.showConfirm('¿Eliminar esta imagen del carrusel?', { title: 'Eliminar imagen' });
+    if (!confirmed) return;
     const data = await api('/api/site');
     const images = data.hero_images || [];
     images.splice(index, 1);

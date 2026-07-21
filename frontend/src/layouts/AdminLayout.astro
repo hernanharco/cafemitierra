@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import ConfirmDialog from "../components/admin/ConfirmDialog.astro";
 import Sidebar from "../components/admin/Sidebar.astro";
 import Toast from "../components/admin/Toast.astro";
 
@@ -34,6 +35,7 @@ const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8001";
   </head>
   <body class="bg-zinc-50 text-zinc-900">
     <Toast />
+    <ConfirmDialog />
 
     <!-- Overlay para mobile cuando el sidebar está abierto -->
     <div id="sidebar-overlay" class="sidebar-overlay"></div>

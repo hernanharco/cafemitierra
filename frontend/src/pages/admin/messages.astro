@@ -172,7 +172,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   async function deleteMessage(id: number) {
-    if (!confirm('¿Eliminar este mensaje?')) return;
+    const confirmed = await window.showConfirm('¿Eliminar este mensaje?', { title: 'Eliminar mensaje' });
+    if (!confirmed) return;
     try {
       await api(`/api/contact/${id}`, { method: 'DELETE' });
       loadMessages(currentFilter);

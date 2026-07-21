@@ -179,7 +179,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   // ── Eliminar imagen ───────────────────────────────────────────
   async function deleteImage(index: number) {
-    if (!confirm('¿Eliminar esta imagen de la galería?')) return;
+    const confirmed = await window.showConfirm('¿Eliminar esta imagen de la galería?', { title: 'Eliminar imagen' });
+    if (!confirmed) return;
     try {
       const data = await api('/api/site');
       const images = data.gallery_images || [];

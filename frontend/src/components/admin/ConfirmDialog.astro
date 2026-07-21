@@ -1,0 +1,277 @@
+---
+/**
+ * ConfirmDialog — Modal de confirmación reutilizable para el admin
+ *
+ * Incluye el CSS y JS necesario. Se importa en AdminLayout.
+ * USO:
+ *   const confirmed = await showConfirm('¿Estás seguro?')
+ *   const confirmed = await showConfirm('¿Eliminar?', {
+ *     title: 'Confirmar eliminación',
+ *     confirmText: 'Eliminar',
+ *     cancelText: 'Cancelar',
+ *     variant: 'danger' | 'warning' | 'info'
+ *   })
+ */
+---
+
+<div id="confirm-overlay" class="confirm-overlay hidden">
+  <div class="confirm-dialog" role="alertdialog" aria-modal="true">
+    <div class="confirm-header">
+      <span id="confirm-icon" class="confirm-icon">⚠️</span>
+      <h3 id="confirm-title" class="confirm-title">Confirmar</h3>
+    </div>
+    <p id="confirm-message" class="confirm-message"></p>
+    <div class="confirm-footer">
+      <button id="confirm-cancel-btn" class="confirm-btn confirm-btn-cancel" autofocus>Cancelar</button>
+      <button id="confirm-accept-btn" class="confirm-btn confirm-btn-danger">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  declare global {
+    interface Window {
+      showConfirm: (
+        message: string,
+        opts?: {
+          title?: string;
+          confirmText?: string;
+          cancelText?: string;
+          variant?: "danger" | "warning" | "info";
+        },
+      ) => Promise<boolean>;
+    }
+  }
+
+  const ICONS: Record<string, string> = {
+    danger: "🗑️",
+    warning: "⚠️",
+    info: "ℹ️",
+  };
+
+  const CONFIRM_BTN_CLASSES: Record<string, string> = {
+    danger: "confirm-btn-danger",
+    warning: "confirm-btn-warning",
+    info: "confirm-btn-info",
+  };
+
+  window.showConfirm = function showConfirm(
+    message: string,
+    opts: {
+      title?: string;
+      confirmText?: string;
+      cancelText?: string;
+      variant?: "danger" | "warning" | "info";
+    } = {},
+  ): Promise<boolean> {
+    return new Promise((resolve) => {
+      const overlay = document.getElementById("confirm-overlay")!;
+      const titleEl = document.getElementById("confirm-title")!;
+      const messageEl = document.getElementById("confirm-message")!;
+      const iconEl = document.getElementById("confirm-icon")!;
+      const acceptBtn = document.getElementById("confirm-accept-btn")! as HTMLButtonElement;
+      const cancelBtn = document.getElementById("confirm-cancel-btn")! as HTMLButtonElement;
+
+      const variant = opts.variant || "danger";
+      const title = opts.title || "Confirmar";
+      const confirmText = opts.confirmText || "Eliminar";
+      const cancelText = opts.cancelText || "Cancelar";
+
+      // Configurar contenido
+      iconEl.textContent = ICONS[variant] || ICONS.danger;
+      titleEl.textContent = title;
+      messageEl.textContent = message;
+      acceptBtn.textContent = confirmText;
+
+      // Configurar estilo del botón de confirmar
+      acceptBtn.className = `confirm-btn ${CONFIRM_BTN_CLASSES[variant] || CONFIRM_BTN_CLASSES.danger}`;
+
+      function cleanup() {
+        overlay.classList.add("hidden");
+        overlay.classList.remove("flex");
+        acceptBtn.removeEventListener("click", onAccept);
+        cancelBtn.removeEventListener("click", onCancel);
+        overlay.removeEventListener("click", onOverlay);
+        document.removeEventListener("keydown", onKeydown);
+        document.body.style.overflow = "";
+      }
+
+      function onAccept() {
+        cleanup();
+        resolve(true);
+      }
+
+      function onCancel() {
+        cleanup();
+        resolve(false);
+      }
+
+      function onOverlay(e: MouseEvent) {
+        if (e.target === overlay) onCancel();
+      }
+
+      function onKeydown(e: KeyboardEvent) {
+        if (e.key === "Escape") onCancel();
+        if (e.key === "Enter") onAccept();
+      }
+
+      acceptBtn.addEventListener("click", onAccept);
+      cancelBtn.addEventListener("click", onCancel);
+      overlay.addEventListener("click", onOverlay);
+      document.addEventListener("keydown", onKeydown);
+
+      // Mostrar
+      overlay.classList.remove("hidden");
+      overlay.classList.add("flex");
+      document.body.style.overflow = "hidden";
+
+      // Focus en cancelar por seguridad
+      cancelBtn.focus();
+    });
+  };
+</script>
+
+<style>
+  /* ── Overlay ──────────────────────────────────────────── */
+  .confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: confirm-fade-in 0.2s ease;
+  }
+
+  .confirm-overlay.flex {
+    display: flex;
+  }
+
+  .confirm-overlay.hidden {
+    display: none;
+  }
+
+  /* ── Dialog ───────────────────────────────────────────── */
+  .confirm-dialog {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 24rem;
+    width: 100%;
+    overflow: hidden;
+    animation: confirm-slide-in 0.25s ease;
+  }
+
+  .confirm-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 1.5rem 0.5rem;
+  }
+
+  .confirm-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .confirm-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #18181b;
+    margin: 0;
+    font-family: inherit;
+  }
+
+  .confirm-message {
+    padding: 0.5rem 1.5rem 1.25rem;
+    font-size: 0.9rem;
+    color: #52525b;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .confirm-footer {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem 1.25rem;
+    justify-content: flex-end;
+  }
+
+  /* ── Buttons ──────────────────────────────────────────── */
+  .confirm-btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+    font-family: inherit;
+  }
+
+  .confirm-btn-cancel {
+    background: #f4f4f5;
+    color: #52525b;
+  }
+  .confirm-btn-cancel:hover {
+    background: #e4e4e7;
+  }
+
+  .confirm-btn-danger {
+    background: #dc2626;
+    color: white;
+  }
+  .confirm-btn-danger:hover {
+    background: #b91c1c;
+  }
+
+  .confirm-btn-warning {
+    background: #f59e0b;
+    color: white;
+  }
+  .confirm-btn-warning:hover {
+    background: #d97706;
+  }
+
+  .confirm-btn-info {
+    background: #3b82f6;
+    color: white;
+  }
+  .confirm-btn-info:hover {
+    background: #2563eb;
+  }
+
+  /* ── Animations ───────────────────────────────────────── */
+  @keyframes confirm-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes confirm-slide-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .confirm-dialog {
+      max-width: 100%;
+      margin: 0 0.5rem;
+    }
+    .confirm-footer {
+      flex-direction: column-reverse;
+    }
+    .confirm-btn {
+      width: 100%;
+      text-align: center;
+      padding: 0.75rem;
+    }
+  }
+</style>

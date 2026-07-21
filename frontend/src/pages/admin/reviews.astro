@@ -167,7 +167,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   async function deleteReview(id: number) {
-    if (!confirm('¿Eliminar esta reseña?')) return;
+    const confirmed = await window.showConfirm('¿Eliminar esta reseña?', { title: 'Eliminar reseña' });
+    if (!confirmed) return;
     try {
       await api(`/api/reviews/${id}`, { method: 'DELETE' });
       loadReviews();

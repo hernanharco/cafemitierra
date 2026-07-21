@@ -11,7 +11,10 @@
 let jwkKey: JsonWebKey | null = null;
 
 export async function getPublicKeyUrl(): Promise<string> {
-  return process.env.AUTHCORE_PUBLIC_KEY_URL || "https://api-authcore.elrincondeharco.com/.well-known/jwks.json";
+  return (
+    process.env.AUTHCORE_PUBLIC_KEY_URL ||
+    "https://api-authcore.elrincondeharco.com/.well-known/jwks.json"
+  );
 }
 
 /**
@@ -42,7 +45,10 @@ async function getJwk(): Promise<JsonWebKey | null> {
     console.log("✅ Clave pública obtenida de authCore (kid:", key.kid, ")");
     return key;
   } catch (err) {
-    console.warn("⚠️ No se pudo obtener clave pública de authCore — modo sin auth:", (err as Error).message);
+    console.warn(
+      "⚠️ No se pudo obtener clave pública de authCore — modo sin auth:",
+      (err as Error).message,
+    );
     return null;
   }
 }
@@ -50,7 +56,7 @@ async function getJwk(): Promise<JsonWebKey | null> {
 /**
  * Solo para tests: permite inyectar una clave manualmente.
  */
-export function setPublicKey(key: string) {
+export function setPublicKey(_key: string) {
   // No-op: ya no usamos string PEM
 }
 

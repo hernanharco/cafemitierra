@@ -252,7 +252,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   });
 
   async function deleteService(index: number) {
-    if (!confirm('¿Eliminar este servicio?')) return;
+    const confirmed = await window.showConfirm('¿Eliminar este servicio?', { title: 'Eliminar servicio' });
+    if (!confirmed) return;
     services.splice(index, 1);
     try {
       await api('/api/site/services', { method: 'PUT', body: JSON.stringify(services) });
