@@ -68,7 +68,7 @@ const showDevLogin = import.meta.env.DEV;
       </div>
     </div>
 
-    <script define:vars={{ BACKEND_URL, AUTHCORE_URL }}>
+    <script is:inline define:vars={{ BACKEND_URL, AUTHCORE_URL }}>
       // ── Google Login (authCore) ──────────────────────────────
       document.getElementById('google-login')?.addEventListener('click', () => {
         const callbackUrl = `${window.location.origin}/auth/callback`;

@@ -1,6 +1,8 @@
 ---
 export const prerender = false;
 
+import AdminLayout from "../../layouts/AdminLayout.astro";
+
 // SEO ahora se maneja desde servicio externo
 return Astro.redirect("/admin");
 ---
@@ -30,7 +32,7 @@ return Astro.redirect("/admin");
 
 <script>
   function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
-  async function api(path, opts = {}) {
+  async function api(path: string, opts: any = {}) {
     const token = getToken();
     const res = await fetch(path, {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
@@ -44,31 +46,31 @@ return Astro.redirect("/admin");
     try {
       const data = await api('/api/site');
       const seo = data.seo || {};
-      document.getElementById('seo-title').value = seo.title || '';
-      document.getElementById('seo-description').value = seo.description || '';
-      document.getElementById('seo-keywords').value = seo.keywords || '';
-    } catch (err) {
-      document.getElementById('seo-status').textContent = 'Error: ' + err.message;
+      (document.getElementById('seo-title') as HTMLInputElement).value = seo.title || '';
+      (document.getElementById('seo-description') as HTMLInputElement).value = seo.description || '';
+      (document.getElementById('seo-keywords') as HTMLInputElement).value = seo.keywords || '';
+    } catch (err: any) {
+      document.getElementById('seo-status')!.textContent = 'Error: ' + err.message;
     }
   }
 
-  document.getElementById('seo-form').addEventListener('submit', async (e) => {
+  document.getElementById('seo-form')!.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const status = document.getElementById('seo-status');
-    const btn = document.getElementById('seo-save-btn');
+    const status = document.getElementById('seo-status')!;
+    const btn = document.getElementById('seo-save-btn') as HTMLButtonElement;
     btn.disabled = true;
     status.textContent = 'Guardando...';
     try {
       await api('/api/site/seo', {
         method: 'PUT',
         body: JSON.stringify({
-          title: document.getElementById('seo-title').value,
-          description: document.getElementById('seo-description').value,
-          keywords: document.getElementById('seo-keywords').value,
+          title: (document.getElementById('seo-title') as HTMLInputElement).value,
+          description: (document.getElementById('seo-description') as HTMLInputElement).value,
+          keywords: (document.getElementById('seo-keywords') as HTMLInputElement).value,
         }),
       });
       status.textContent = '✅ Guardado';
-    } catch (err) {
+    } catch (err: any) {
       status.textContent = 'Error: ' + err.message;
     } finally {
       btn.disabled = false;

@@ -75,7 +75,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 </AdminLayout>
 
 <script>
-  async function fetchWithAuth(url) {
+  async function fetchWithAuth(url: string) {
     const token = document.cookie
       .split('; ')
       .find(row => row.startsWith('token='))
@@ -92,9 +92,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         fetchWithAuth('/api/gallery'),
         fetchWithAuth('/api/reviews'),
       ]);
-      document.getElementById('gallery-count').textContent = galleryImages.length;
-      document.getElementById('reviews-count').textContent = reviews.length;
-    } catch (err) {
+      document.getElementById('gallery-count')!.textContent = galleryImages.length;
+      document.getElementById('reviews-count')!.textContent = reviews.length;
+    } catch (err: any) {
       console.error('Error cargando dashboard:', err);
     }
   }

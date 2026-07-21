@@ -20,7 +20,7 @@ import HeroParticles from "../effects/HeroParticles.astro";
 
   <!-- Carousel de imágenes (centradas, sin recortar) -->
   <div class="carousel-container absolute inset-0 z-20 flex items-center justify-center">
-    {heroImages.map((img) => (
+    {heroImages.map((img: any) => (
       <div class="carousel-slide absolute inset-0 flex items-center justify-center">
         <img
           src={img.src}
@@ -34,7 +34,7 @@ import HeroParticles from "../effects/HeroParticles.astro";
 
   <!-- Indicadores del carrusel -->
   <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-3">
-    {heroImages.map((_, i) => (
+    {heroImages.map((_: any, i: number) => (
       <button
         class="carousel-dot w-2.5 h-2.5 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300"
         data-index={i}
@@ -51,17 +51,17 @@ import HeroParticles from "../effects/HeroParticles.astro";
     const dots = document.querySelectorAll('.carousel-dot');
     let current = 0;
 
-    function showSlide(index) {
+    function showSlide(index: number) {
       slides.forEach((slide, i) => {
-        slide.style.opacity = i === index ? '1' : '0';
-        slide.style.transition = 'opacity 1.2s ease-in-out';
-        slide.style.display = 'flex'; // Siempre visible para animación
+        (slide as HTMLElement).style.opacity = i === index ? '1' : '0';
+        (slide as HTMLElement).style.transition = 'opacity 1.2s ease-in-out';
+        (slide as HTMLElement).style.display = 'flex'; // Siempre visible para animación
       });
       // Resetear display en slides ocultos después de la transición
       slides.forEach((slide, i) => {
         if (i !== index) {
           setTimeout(() => {
-            slide.style.display = 'none';
+            (slide as HTMLElement).style.display = 'none';
           }, 1200);
         }
       });
@@ -79,7 +79,7 @@ import HeroParticles from "../effects/HeroParticles.astro";
     // Click en dots
     dots.forEach((dot) => {
       dot.addEventListener('click', () => {
-        const index = Number(dot.dataset.index);
+        const index = Number((dot as HTMLElement).dataset.index);
         showSlide(index);
         // Resetear intervalo al hacer click
         clearInterval(interval);

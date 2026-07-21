@@ -76,7 +76,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
 <script>
   function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
-  async function api(path, opts = {}) {
+  async function api(path: string, opts: any = {}) {
     const token = getToken();
     const res = await fetch(path, {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
@@ -90,50 +90,50 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   async function load() {
     try {
       const data = await api('/api/site');
-      document.getElementById('about-title').value = data.about?.title || '';
-      document.getElementById('about-subtitle').value = data.about?.subtitle || '';
-      document.getElementById('about-description').value = data.description || '';
-      document.getElementById('about-features').value = (data.features || []).join('\n');
-      document.getElementById('about-badge').value = data.about?.badge || '';
+      (document.getElementById('about-title') as HTMLInputElement).value = data.about?.title || '';
+      (document.getElementById('about-subtitle') as HTMLInputElement).value = data.about?.subtitle || '';
+      (document.getElementById('about-description') as HTMLInputElement).value = data.description || '';
+      (document.getElementById('about-features') as HTMLInputElement).value = (data.features || []).join('\n');
+      (document.getElementById('about-badge') as HTMLInputElement).value = data.about?.badge || '';
       const img = data.about?.image;
       if (img) {
-        document.getElementById('about-image').value = img;
-        const show = document.getElementById('about-image-show');
+        (document.getElementById('about-image') as HTMLInputElement).value = img;
+        const show = document.getElementById('about-image-show') as HTMLImageElement;
         show.src = img;
         show.classList.remove('hidden');
-        document.getElementById('about-image-placeholder').classList.add('hidden');
+        document.getElementById('about-image-placeholder')!.classList.add('hidden');
       }
-    } catch (err) {
-      document.getElementById('about-status').textContent = 'Error: ' + err.message;
+    } catch (err: any) {
+      document.getElementById('about-status')!.textContent = 'Error: ' + err.message;
     }
   }
 
   // ── Guardar ──────────────────────────────────────────────────
-  document.getElementById('about-form').addEventListener('submit', async (e) => {
+  document.getElementById('about-form')!.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const status = document.getElementById('about-status');
-    const btn = document.getElementById('about-save-btn');
+    const status = document.getElementById('about-status')!;
+    const btn = document.getElementById('about-save-btn') as HTMLButtonElement;
     btn.disabled = true;
     status.textContent = 'Guardando...';
     try {
-      const features = document.getElementById('about-features').value
-        .split('\n').map(s => s.trim()).filter(Boolean);
+      const features = (document.getElementById('about-features') as HTMLInputElement).value
+        .split('\n').map((s: string) => s.trim()).filter(Boolean);
       await api('/api/site', {
         method: 'PUT',
         body: JSON.stringify({
-          description: document.getElementById('about-description').value,
+          description: (document.getElementById('about-description') as HTMLInputElement).value,
           features,
           about: {
-            title: document.getElementById('about-title').value,
-            subtitle: document.getElementById('about-subtitle').value,
-            image: document.getElementById('about-image').value || null,
-            badge: document.getElementById('about-badge').value,
+            title: (document.getElementById('about-title') as HTMLInputElement).value,
+            subtitle: (document.getElementById('about-subtitle') as HTMLInputElement).value,
+            image: (document.getElementById('about-image') as HTMLInputElement).value || null,
+            badge: (document.getElementById('about-badge') as HTMLInputElement).value,
           },
         }),
       });
       status.textContent = '✅ Guardado';
       setTimeout(() => status.textContent = '', 3000);
-    } catch (err) {
+    } catch (err: any) {
       status.textContent = 'Error: ' + err.message;
     } finally {
       btn.disabled = false;
@@ -141,14 +141,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   });
 
   // ── Subir imagen ────────────────────────────────────────────
-  const modal = document.getElementById('image-modal');
-  const fileInput = document.getElementById('file-input');
-  const uploadZone = document.getElementById('upload-zone');
-  const uploadPreview = document.getElementById('upload-preview');
+  const modal = document.getElementById('image-modal') as HTMLDialogElement;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const uploadZone = document.getElementById('upload-zone')!;
+  const uploadPreview = document.getElementById('upload-preview') as HTMLImageElement;
 
-  document.getElementById('change-image-btn').addEventListener('click', () => modal.showModal());
-  document.getElementById('modal-close-btn').addEventListener('click', () => modal.close());
-  document.getElementById('modal-cancel-btn').addEventListener('click', () => modal.close());
+  document.getElementById('change-image-btn')!.addEventListener('click', () => modal.showModal());
+  document.getElementById('modal-close-btn')!.addEventListener('click', () => modal.close());
+  document.getElementById('modal-cancel-btn')!.addEventListener('click', () => modal.close());
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
 
   uploadZone.addEventListener('click', () => fileInput.click());
@@ -156,29 +156,29 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('dragover'); });
   uploadZone.addEventListener('drop', (e) => {
     e.preventDefault(); uploadZone.classList.remove('dragover');
-    if (e.dataTransfer.files.length) {
-      fileInput.files = e.dataTransfer.files;
-      showPreview(e.dataTransfer.files[0]);
+    if (e.dataTransfer!.files.length) {
+      fileInput.files = e.dataTransfer!.files;
+      showPreview(e.dataTransfer!.files[0]);
     }
   });
-  fileInput.addEventListener('change', () => { if (fileInput.files.length) showPreview(fileInput.files[0]); });
+  fileInput.addEventListener('change', () => { if (fileInput.files!.length) showPreview(fileInput.files![0]); });
 
-  function showPreview(file) {
+  function showPreview(file: File) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      uploadPreview.src = e.target.result;
+      (uploadPreview as HTMLImageElement).src = (e.target as FileReader).result as string;
       uploadPreview.classList.remove('hidden');
       uploadZone.querySelector('p')?.classList.add('hidden');
     };
     reader.readAsDataURL(file);
   }
 
-  document.getElementById('image-upload-form').addEventListener('submit', async (e) => {
+  document.getElementById('image-upload-form')!.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!fileInput.files.length) { window.showToast('Seleccioná una imagen', { type: 'info' }); return; }
+    if (!fileInput.files!.length) { window.showToast('Seleccioná una imagen', { type: 'info' }); return; }
     try {
       const formData = new FormData();
-      formData.append('file', fileInput.files[0]);
+      formData.append('file', fileInput.files![0]);
       formData.append('folder', 'gallery');
       const token = getToken();
       const res = await fetch('/api/gallery/upload', {
@@ -189,16 +189,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       if (!res.ok) throw new Error('Error al subir');
       const uploaded = await res.json();
 
-      // Mostrar la imagen en el preview
-      document.getElementById('about-image').value = uploaded.imageUrl;
-      const show = document.getElementById('about-image-show');
+      (document.getElementById('about-image') as HTMLInputElement).value = uploaded.imageUrl;
+      const show = document.getElementById('about-image-show') as HTMLImageElement;
       show.src = uploaded.imageUrl;
       show.classList.remove('hidden');
-      document.getElementById('about-image-placeholder').classList.add('hidden');
+      document.getElementById('about-image-placeholder')!.classList.add('hidden');
 
       modal.close();
       resetUpload();
-    } catch (err) {
+    } catch (err: any) {
       window.showToast('Error: ' + err.message, { type: 'error' });
     }
   });

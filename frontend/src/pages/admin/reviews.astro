@@ -42,7 +42,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
 <script>
   function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
-  async function api(path, opts = {}) {
+  async function api(path: string, opts: any = {}) {
     const token = getToken();
     const res = await fetch(path, {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
@@ -53,26 +53,26 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     return res.json();
   }
 
-  function escapeHtml(text) {
+  function escapeHtml(text: string) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 
-  function formatDate(iso) {
+  function formatDate(iso: string) {
     if (!iso) return '—';
     return new Date(iso).toLocaleDateString('es-ES', {
       day: '2-digit', month: '2-digit', year: 'numeric',
     });
   }
 
-  function stars(rating) {
+  function stars(rating: number) {
     return '⭐'.repeat(Math.round(rating || 5));
   }
 
   async function loadReviews() {
-    const tbody = document.getElementById('reviews-table-body');
-    const cardsContainer = document.getElementById('reviews-cards');
+    const tbody = document.getElementById('reviews-table-body')!;
+    const cardsContainer = document.getElementById('reviews-cards')!;
     try {
       const reviews = await api('/api/reviews');
 
@@ -84,7 +84,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
 
       // ── Desktop: tabla ──
-      tbody.innerHTML = reviews.map(r => {
+      tbody.innerHTML = reviews.map((r: any) => {
         const created = formatDate(r.createdAt);
         return `
         <tr class="${r.visible ? '' : 'bg-amber-50/50'}">
@@ -111,7 +111,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }).join('');
 
       // ── Mobile: cards ──
-      cardsContainer.innerHTML = reviews.map(r => {
+      cardsContainer.innerHTML = reviews.map((r: any) => {
         const created = formatDate(r.createdAt);
         return `
         <div class="review-card ${r.visible ? '' : 'review-card-pending'}">
@@ -142,36 +142,36 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       // Bind events
       document.querySelectorAll('.toggle-btn').forEach(b =>
-        b.addEventListener('click', () => toggleReview(Number(b.dataset.id), b.dataset.visible === 'true'))
+        b.addEventListener('click', () => toggleReview(Number((b as HTMLElement).dataset.id), (b as HTMLElement).dataset.visible === 'true'))
       );
       document.querySelectorAll('.delete-btn').forEach(b =>
-        b.addEventListener('click', () => deleteReview(Number(b.dataset.id)))
+        b.addEventListener('click', () => deleteReview(Number((b as HTMLElement).dataset.id)))
       );
-    } catch (err) {
+    } catch (err: any) {
       const errorMsg = '<tr><td colspan="7" class="text-center text-red-500 py-8">Error: ' + err.message + '</td></tr>';
       tbody.innerHTML = errorMsg;
       cardsContainer.innerHTML = '<p class="text-center text-red-500 py-8 text-sm">Error: ' + err.message + '</p>';
     }
   }
 
-  async function toggleReview(id, currentVisible) {
+  async function toggleReview(id: number, currentVisible: boolean) {
     try {
       await api(`/api/reviews/${id}`, {
         method: 'PUT',
         body: JSON.stringify({ visible: !currentVisible }),
       });
       loadReviews();
-    } catch (err) {
+    } catch (err: any) {
       window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }
 
-  async function deleteReview(id) {
+  async function deleteReview(id: number) {
     if (!confirm('¿Eliminar esta reseña?')) return;
     try {
       await api(`/api/reviews/${id}`, { method: 'DELETE' });
       loadReviews();
-    } catch (err) {
+    } catch (err: any) {
       window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }

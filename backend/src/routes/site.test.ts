@@ -30,7 +30,6 @@ const mockSiteData = [
 
 describe("Site Routes — /api/site (DB)", () => {
   let app: Awaited<typeof appPromise>["default"];
-  const authHeader = { Authorization: "Bearer dev-token" };
 
   beforeEach(async () => {
     vi.clearAllMocks();

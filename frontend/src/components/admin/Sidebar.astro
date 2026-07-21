@@ -41,10 +41,9 @@ function isActive(href: string) {
     <ul>
       {navItems.map((item) => (
         <li class:list={{ active: isActive(item.href) }}>
-          <a href={item.href} class:list={{ "external-link": item.external }}>
+          <a href={item.href}>
             <span class="nav-icon">{item.icon}</span>
             <span class="nav-label">{item.label}</span>
-            {item.external && <span class="nav-badge">↗</span>}
           </a>
         </li>
       ))}

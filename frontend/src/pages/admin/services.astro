@@ -116,7 +116,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
 <script>
   function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
-  async function api(path, opts = {}) {
+  async function api(path: string, opts: any = {}) {
     const token = getToken();
     const res = await fetch(path, {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
@@ -127,29 +127,29 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     return res.json();
   }
 
-  let services = [];
+  let services: any[] = [];
 
   // ── Cargar ────────────────────────────────────────────────────
   async function load() {
     try {
       const data = await api('/api/site');
       services = data.services || [];
-      document.getElementById('srv-title').value = data.services_title || '';
-      document.getElementById('srv-subtitle').value = data.services_subtitle || '';
-      document.getElementById('srv-description').value = data.services_description || '';
+      (document.getElementById('srv-title') as HTMLInputElement).value = data.services_title || '';
+      (document.getElementById('srv-subtitle') as HTMLInputElement).value = data.services_subtitle || '';
+      (document.getElementById('srv-description') as HTMLInputElement).value = data.services_description || '';
       render();
-    } catch (err) {
-      document.getElementById('services-list').innerHTML = `<p class="text-red-500 text-sm">Error: ${err.message}</p>`;
+    } catch (err: any) {
+      document.getElementById('services-list')!.innerHTML = `<p class="text-red-500 text-sm">Error: ${err.message}</p>`;
     }
   }
 
   function render() {
-    const container = document.getElementById('services-list');
+    const container = document.getElementById('services-list')!;
     if (services.length === 0) {
       container.innerHTML = '<p class="text-zinc-400 text-sm">No hay servicios aún</p>';
       return;
     }
-    container.innerHTML = services.map((s, i) => `
+    container.innerHTML = services.map((s: any, i: number) => `
       <div class="service-item">
         <div class="service-item-left">
           ${s.image ? `<img src="${s.image}" class="service-thumb" />` : `<div class="service-thumb-placeholder">📷</div>`}
@@ -164,48 +164,47 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
       </div>
     `).join('');
-    container.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', () => openModal(Number(b.dataset.index))));
-    container.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', () => deleteService(Number(b.dataset.index))));
+    container.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', () => openModal(Number((b as HTMLElement).dataset.index))));
+    container.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', () => deleteService(Number((b as HTMLElement).dataset.index))));
   }
 
   // ── Guardar textos sección ────────────────────────────────────
-  document.getElementById('section-form').addEventListener('submit', async (e) => {
+  document.getElementById('section-form')!.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const status = document.getElementById('section-status');
+    const status = document.getElementById('section-status')!;
     status.textContent = 'Guardando...';
     try {
       await api('/api/site', {
         method: 'PUT',
         body: JSON.stringify({
-          services_title: document.getElementById('srv-title').value,
-          services_subtitle: document.getElementById('srv-subtitle').value,
-          services_description: document.getElementById('srv-description').value,
+          services_title: (document.getElementById('srv-title') as HTMLInputElement).value,
+          services_subtitle: (document.getElementById('srv-subtitle') as HTMLInputElement).value,
+          services_description: (document.getElementById('srv-description') as HTMLInputElement).value,
         }),
       });
       status.textContent = '✅ Guardado';
       setTimeout(() => status.textContent = '', 3000);
-    } catch (err) {
+    } catch (err: any) {
       status.textContent = 'Error: ' + err.message;
     }
   });
 
   // ── Modal servicios ──────────────────────────────────────────
-  const modal = document.getElementById('service-modal');
-  const form = document.getElementById('service-form');
+  const modal = document.getElementById('service-modal') as HTMLDialogElement;
+  const form = document.getElementById('service-form')!;
 
   function openModal(index = -1) {
-    document.getElementById('service-modal-title').textContent = index >= 0 ? 'Editar Servicio' : 'Nuevo Servicio';
-    document.getElementById('service-index').value = index;
+    document.getElementById('service-modal-title')!.textContent = index >= 0 ? 'Editar Servicio' : 'Nuevo Servicio';
+    (document.getElementById('service-index') as HTMLInputElement).value = String(index);
     const s = index >= 0 ? services[index] : null;
-    document.getElementById('svc-title').value = s?.title ?? '';
-    document.getElementById('svc-description').value = s?.description ?? '';
-    document.getElementById('svc-icon').value = s?.icon ?? '';
-    // Marcar emoji activo
+    (document.getElementById('svc-title') as HTMLInputElement).value = s?.title ?? '';
+    (document.getElementById('svc-description') as HTMLInputElement).value = s?.description ?? '';
+    (document.getElementById('svc-icon') as HTMLInputElement).value = s?.icon ?? '';
     document.querySelectorAll('.emoji-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.emoji === s?.icon);
+      b.classList.toggle('active', (b as HTMLElement).dataset.emoji === s?.icon);
     });
-    document.getElementById('svc-image').value = s?.image ?? '';
-    const preview = document.getElementById('svc-image-preview');
+    (document.getElementById('svc-image') as HTMLInputElement).value = s?.image ?? '';
+    const preview = document.getElementById('svc-image-preview') as HTMLImageElement;
     if (s?.image) { preview.src = s.image; preview.classList.remove('hidden'); }
     else preview.classList.add('hidden');
     modal.showModal();
@@ -216,30 +215,30 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     btn.addEventListener('click', () => {
       document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('svc-icon').value = btn.dataset.emoji;
+      (document.getElementById('svc-icon') as HTMLInputElement).value = (btn as HTMLElement).dataset.emoji!;
     });
   });
 
-  document.getElementById('add-service-btn').addEventListener('click', () => openModal());
-  document.getElementById('service-close-btn').addEventListener('click', () => modal.close());
-  document.getElementById('service-cancel-btn').addEventListener('click', () => modal.close());
+  document.getElementById('add-service-btn')!.addEventListener('click', () => openModal());
+  document.getElementById('service-close-btn')!.addEventListener('click', () => modal.close());
+  document.getElementById('service-cancel-btn')!.addEventListener('click', () => modal.close());
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
 
   // Preview imagen al escribir URL
-  document.getElementById('svc-image').addEventListener('input', (e) => {
-    const preview = document.getElementById('svc-image-preview');
-    if (e.target.value) { preview.src = e.target.value; preview.classList.remove('hidden'); }
+  document.getElementById('svc-image')!.addEventListener('input', (e) => {
+    const preview = document.getElementById('svc-image-preview') as HTMLImageElement;
+    if ((e.target as HTMLInputElement).value) { preview.src = (e.target as HTMLInputElement).value; preview.classList.remove('hidden'); }
     else preview.classList.add('hidden');
   });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const index = Number(document.getElementById('service-index').value);
+    const index = Number((document.getElementById('service-index') as HTMLInputElement).value);
     const item = {
-      title: document.getElementById('svc-title').value,
-      description: document.getElementById('svc-description').value,
-      icon: document.getElementById('svc-icon').value,
-      image: document.getElementById('svc-image').value || undefined,
+      title: (document.getElementById('svc-title') as HTMLInputElement).value,
+      description: (document.getElementById('svc-description') as HTMLInputElement).value,
+      icon: (document.getElementById('svc-icon') as HTMLInputElement).value,
+      image: (document.getElementById('svc-image') as HTMLInputElement).value || undefined,
     };
     if (index >= 0) services[index] = item;
     else services.push(item);
@@ -247,18 +246,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       await api('/api/site/services', { method: 'PUT', body: JSON.stringify(services) });
       modal.close();
       render();
-    } catch (err) {
+    } catch (err: any) {
       window.showToast('Error: ' + err.message, { type: 'error' });
     }
   });
 
-  async function deleteService(index) {
+  async function deleteService(index: number) {
     if (!confirm('¿Eliminar este servicio?')) return;
     services.splice(index, 1);
     try {
       await api('/api/site/services', { method: 'PUT', body: JSON.stringify(services) });
       render();
-    } catch (err) {
+    } catch (err: any) {
       window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }

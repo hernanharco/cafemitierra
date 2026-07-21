@@ -36,7 +36,8 @@ const { class: className = "", delay = 0, direction = "up" } = Astro.props;
 
   const revealElements = document.querySelectorAll('.scroll-reveal');
 
-  revealElements.forEach((el) => {
+  revealElements.forEach((_el) => {
+    const el = _el as HTMLElement;
     const delay = parseFloat(el.dataset.delay || '0');
     const direction = (el.dataset.direction || 'up') as keyof typeof directionToFrom;
     const fromVars = {

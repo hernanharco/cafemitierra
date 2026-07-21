@@ -18,7 +18,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
 <script>
   function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
-  async function api(path, opts = {}) {
+  async function api(path: string, opts: any = {}) {
     const token = getToken();
     const res = await fetch(path, {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
@@ -34,9 +34,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     try {
       const data = await api('/api/site');
       const hours = data.hours || [];
-      const container = document.getElementById('schedule-rows');
-      container.innerHTML = DAYS.map((day, i) => {
-        const entry = hours.find(h => h.day === day) || { day, hours: '' };
+      const container = document.getElementById('schedule-rows')!;
+      container.innerHTML = DAYS.map((day: string) => {
+        const entry = hours.find((h: any) => h.day === day) || { day, hours: '' };
         return `
           <div class="schedule-row">
             <label class="schedule-day">${day}</label>
@@ -44,26 +44,26 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </div>
         `;
       }).join('');
-    } catch (err) {
-      document.getElementById('schedule-status').textContent = 'Error: ' + err.message;
+    } catch (err: any) {
+      document.getElementById('schedule-status')!.textContent = 'Error: ' + err.message;
     }
   }
 
-  document.getElementById('schedule-form').addEventListener('submit', async (e) => {
+  document.getElementById('schedule-form')!.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const status = document.getElementById('schedule-status');
-    const btn = document.getElementById('schedule-save-btn');
+    const status = document.getElementById('schedule-status')!;
+    const btn = document.getElementById('schedule-save-btn') as HTMLButtonElement;
     btn.disabled = true;
     status.textContent = 'Guardando...';
     try {
       const inputs = document.querySelectorAll('.schedule-input');
       const hours = Array.from(inputs).map(input => ({
-        day: input.dataset.day,
-        hours: input.value.trim() || 'Cerrado',
+        day: (input as HTMLElement).dataset.day,
+        hours: (input as HTMLInputElement).value.trim() || 'Cerrado',
       }));
       await api('/api/site/hours', { method: 'PUT', body: JSON.stringify(hours) });
       status.textContent = '✅ Guardado';
-    } catch (err) {
+    } catch (err: any) {
       status.textContent = 'Error: ' + err.message;
     } finally {
       btn.disabled = false;

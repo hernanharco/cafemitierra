@@ -19,10 +19,7 @@ async function proxy(request: Request): Promise<Response> {
   headers.delete("host");
 
   try {
-    const body =
-      ["GET", "HEAD"].includes(request.method)
-        ? undefined
-        : await request.arrayBuffer();
+    const body = ["GET", "HEAD"].includes(request.method) ? undefined : await request.arrayBuffer();
 
     const response = await fetch(backendUrl, {
       method: request.method,

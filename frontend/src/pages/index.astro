@@ -1,7 +1,7 @@
 ---
 // SSR: cargar datos frescos desde la API en cada visita
 const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8001";
-let business = {};
+let business: Record<string, any> = {};
 
 try {
   // Cargar datos del sitio

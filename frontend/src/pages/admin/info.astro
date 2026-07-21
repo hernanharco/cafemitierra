@@ -81,7 +81,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
 <script>
   function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
-  async function api(path, opts = {}) {
+  async function api(path: string, opts: any = {}) {
     const token = getToken();
     const res = await fetch(path, {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
@@ -94,53 +94,53 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   async function load() {
     try {
       const data = await api('/api/site');
-      document.getElementById('info-phone').value = data.phone || '';
-      document.getElementById('info-whatsapp').value = data.whatsapp || '';
-      document.getElementById('info-instagram').value = data.instagram || '';
-      document.getElementById('info-website').value = data.website || '';
-      document.getElementById('info-street').value = data.address?.street || '';
-      document.getElementById('info-city').value = data.address?.city || '';
-      document.getElementById('info-province').value = data.address?.province || '';
-      document.getElementById('info-postal').value = data.address?.postal_code || '';
-      document.getElementById('info-address-full').value = data.address?.full || '';
-      document.getElementById('info-lat').value = data.coordinates?.lat ?? '';
-      document.getElementById('info-lng').value = data.coordinates?.lng ?? '';
-      document.getElementById('info-maps-url').value = data.google_maps_url || '';
-    } catch (err) {
-      document.getElementById('info-status').textContent = 'Error: ' + err.message;
+      (document.getElementById('info-phone') as HTMLInputElement).value = data.phone || '';
+      (document.getElementById('info-whatsapp') as HTMLInputElement).value = data.whatsapp || '';
+      (document.getElementById('info-instagram') as HTMLInputElement).value = data.instagram || '';
+      (document.getElementById('info-website') as HTMLInputElement).value = data.website || '';
+      (document.getElementById('info-street') as HTMLInputElement).value = data.address?.street || '';
+      (document.getElementById('info-city') as HTMLInputElement).value = data.address?.city || '';
+      (document.getElementById('info-province') as HTMLInputElement).value = data.address?.province || '';
+      (document.getElementById('info-postal') as HTMLInputElement).value = data.address?.postal_code || '';
+      (document.getElementById('info-address-full') as HTMLInputElement).value = data.address?.full || '';
+      (document.getElementById('info-lat') as HTMLInputElement).value = data.coordinates?.lat ?? '';
+      (document.getElementById('info-lng') as HTMLInputElement).value = data.coordinates?.lng ?? '';
+      (document.getElementById('info-maps-url') as HTMLInputElement).value = data.google_maps_url || '';
+    } catch (err: any) {
+      document.getElementById('info-status')!.textContent = 'Error: ' + err.message;
     }
   }
 
-  document.getElementById('info-form').addEventListener('submit', async (e) => {
+  document.getElementById('info-form')!.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const status = document.getElementById('info-status');
-    const btn = document.getElementById('info-save-btn');
+    const status = document.getElementById('info-status')!;
+    const btn = document.getElementById('info-save-btn') as HTMLButtonElement;
     btn.disabled = true;
     status.textContent = 'Guardando...';
     try {
       await api('/api/site', {
         method: 'PUT',
         body: JSON.stringify({
-          phone: document.getElementById('info-phone').value,
-          whatsapp: document.getElementById('info-whatsapp').value,
-          instagram: document.getElementById('info-instagram').value,
-          website: document.getElementById('info-website').value,
+          phone: (document.getElementById('info-phone') as HTMLInputElement).value,
+          whatsapp: (document.getElementById('info-whatsapp') as HTMLInputElement).value,
+          instagram: (document.getElementById('info-instagram') as HTMLInputElement).value,
+          website: (document.getElementById('info-website') as HTMLInputElement).value,
           address: {
-            street: document.getElementById('info-street').value,
-            city: document.getElementById('info-city').value,
-            province: document.getElementById('info-province').value,
-            postal_code: document.getElementById('info-postal').value,
-            full: document.getElementById('info-address-full').value,
+            street: (document.getElementById('info-street') as HTMLInputElement).value,
+            city: (document.getElementById('info-city') as HTMLInputElement).value,
+            province: (document.getElementById('info-province') as HTMLInputElement).value,
+            postal_code: (document.getElementById('info-postal') as HTMLInputElement).value,
+            full: (document.getElementById('info-address-full') as HTMLInputElement).value,
           },
           coordinates: {
-            lat: Number(document.getElementById('info-lat').value) || 0,
-            lng: Number(document.getElementById('info-lng').value) || 0,
+            lat: Number((document.getElementById('info-lat') as HTMLInputElement).value) || 0,
+            lng: Number((document.getElementById('info-lng') as HTMLInputElement).value) || 0,
           },
-          google_maps_url: document.getElementById('info-maps-url').value,
+          google_maps_url: (document.getElementById('info-maps-url') as HTMLInputElement).value,
         }),
       });
       status.textContent = '✅ Guardado';
-    } catch (err) {
+    } catch (err: any) {
       status.textContent = 'Error: ' + err.message;
     } finally {
       btn.disabled = false;

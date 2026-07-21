@@ -48,7 +48,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   let currentFilter = 'all';
 
   function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
-  async function api(path, opts = {}) {
+  async function api(path: string, opts: any = {}) {
     const token = getToken();
     const res = await fetch(path, {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
@@ -59,13 +59,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     return res.json();
   }
 
-  function escapeHtml(text) {
+  function escapeHtml(text: string) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 
-  function formatDate(iso) {
+  function formatDate(iso: string) {
     if (!iso) return '—';
     const d = new Date(iso);
     return d.toLocaleDateString('es-ES', {
@@ -75,15 +75,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   async function loadMessages(filter = 'all') {
-    const tbody = document.getElementById('messages-table-body');
-    const cardsContainer = document.getElementById('messages-cards');
+    const tbody = document.getElementById('messages-table-body')!;
+    const cardsContainer = document.getElementById('messages-cards')!;
     try {
       const messages = await api('/api/contact');
       currentFilter = filter;
 
       let filtered = messages;
       if (filter === 'unread') {
-        filtered = messages.filter(m => !m.read);
+        filtered = messages.filter((m: any) => !m.read);
       }
 
       if (filtered.length === 0) {
@@ -94,7 +94,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
 
       // ── Desktop: filas de tabla ──
-      tbody.innerHTML = filtered.map(m => {
+      tbody.innerHTML = filtered.map((m: any) => {
         const created = formatDate(m.createdAt);
         return `
         <tr class="${m.read ? '' : 'bg-amber-50/50 font-medium'}">
@@ -121,7 +121,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }).join('');
 
       // ── Mobile: cards ──
-      cardsContainer.innerHTML = filtered.map(m => {
+      cardsContainer.innerHTML = filtered.map((m: any) => {
         const created = formatDate(m.createdAt);
         return `
         <div class="message-card ${m.read ? '' : 'message-card-unread'}">
@@ -150,46 +150,46 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       // Bind events (ambas vistas comparten mismas clases)
       document.querySelectorAll('.read-btn').forEach(b =>
-        b.addEventListener('click', () => markAsRead(Number(b.dataset.id)))
+        b.addEventListener('click', () => markAsRead(Number((b as HTMLElement).dataset.id)))
       );
       document.querySelectorAll('.delete-btn').forEach(b =>
-        b.addEventListener('click', () => deleteMessage(Number(b.dataset.id)))
+        b.addEventListener('click', () => deleteMessage(Number((b as HTMLElement).dataset.id)))
       );
-    } catch (err) {
+    } catch (err: any) {
       const errorMsg = `<tr><td colspan="6" class="text-center text-red-500 py-8">Error: ${err.message}</td></tr>`;
       tbody.innerHTML = errorMsg;
       cardsContainer.innerHTML = `<p class="text-center text-red-500 py-8 text-sm">Error: ${err.message}</p>`;
     }
   }
 
-  async function markAsRead(id) {
+  async function markAsRead(id: number) {
     try {
       await api(`/api/contact/${id}/read`, { method: 'PUT' });
       loadMessages(currentFilter);
-    } catch (err) {
+    } catch (err: any) {
       window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }
 
-  async function deleteMessage(id) {
+  async function deleteMessage(id: number) {
     if (!confirm('¿Eliminar este mensaje?')) return;
     try {
       await api(`/api/contact/${id}`, { method: 'DELETE' });
       loadMessages(currentFilter);
-    } catch (err) {
+    } catch (err: any) {
       window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }
 
   // Init
-  document.getElementById('filter-all').addEventListener('click', () => {
+  document.getElementById('filter-all')!.addEventListener('click', () => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('filter-all').classList.add('active');
+    document.getElementById('filter-all')!.classList.add('active');
     loadMessages('all');
   });
-  document.getElementById('filter-unread').addEventListener('click', () => {
+  document.getElementById('filter-unread')!.addEventListener('click', () => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('filter-unread').classList.add('active');
+    document.getElementById('filter-unread')!.classList.add('active');
     loadMessages('unread');
   });
 

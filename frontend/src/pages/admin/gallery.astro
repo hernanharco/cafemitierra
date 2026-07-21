@@ -48,7 +48,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
 <script>
   function getToken() { return document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1]; }
-  async function api(path, opts = {}) {
+  async function api(path: string, opts: any = {}) {
     const token = getToken();
     const res = await fetch(path, {
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts.headers },
@@ -61,7 +61,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   // ── Cargar galería ────────────────────────────────────────────
   async function loadGallery() {
-    const grid = document.getElementById('gallery-grid');
+    const grid = document.getElementById('gallery-grid')!;
     try {
       const data = await api('/api/site');
       const images = data.gallery_images || [];
@@ -71,7 +71,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         return;
       }
 
-      grid.innerHTML = images.map((img, i) => `
+      grid.innerHTML = images.map((img: any, i: number) => `
         <div class="gallery-card" data-index="${i}">
           <div class="gallery-img-wrapper">
             <img src="${img.src}" alt="${img.alt || ''}" loading="lazy" />
@@ -87,23 +87,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       `).join('');
 
       grid.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => deleteImage(Number(btn.dataset.index)));
+        btn.addEventListener('click', () => deleteImage(Number((btn as HTMLElement).dataset.index)));
       });
-    } catch (err) {
+    } catch (err: any) {
       grid.innerHTML = `<p class="text-red-500 text-center py-12 col-span-full">Error: ${err.message}</p>`;
     }
   }
 
   // ── Subir imagen ──────────────────────────────────────────────
-  const uploadModal = document.getElementById('upload-modal');
-  const fileInput = document.getElementById('file-input');
-  const uploadZone = document.getElementById('upload-zone');
-  const uploadPreview = document.getElementById('upload-preview');
-  const submitBtn = document.getElementById('upload-submit-btn');
+  const uploadModal = document.getElementById('upload-modal') as HTMLDialogElement;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const uploadZone = document.getElementById('upload-zone')!;
+  const uploadPreview = document.getElementById('upload-preview') as HTMLImageElement;
+  const submitBtn = document.getElementById('upload-submit-btn') as HTMLButtonElement;
 
-  document.getElementById('upload-btn').addEventListener('click', () => uploadModal.showModal());
-  document.getElementById('upload-close-btn').addEventListener('click', () => uploadModal.close());
-  document.getElementById('upload-cancel-btn').addEventListener('click', () => uploadModal.close());
+  document.getElementById('upload-btn')!.addEventListener('click', () => uploadModal.showModal());
+  document.getElementById('upload-close-btn')!.addEventListener('click', () => uploadModal.close());
+  document.getElementById('upload-cancel-btn')!.addEventListener('click', () => uploadModal.close());
   uploadModal.addEventListener('click', (e) => { if (e.target === uploadModal) uploadModal.close(); });
 
   uploadZone.addEventListener('click', () => fileInput.click());
@@ -111,32 +111,32 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('dragover'); });
   uploadZone.addEventListener('drop', (e) => {
     e.preventDefault(); uploadZone.classList.remove('dragover');
-    if (e.dataTransfer.files.length) {
-      fileInput.files = e.dataTransfer.files;
-      showPreview(e.dataTransfer.files[0]);
+    if (e.dataTransfer!.files.length) {
+      fileInput.files = e.dataTransfer!.files;
+      showPreview(e.dataTransfer!.files[0]);
     }
   });
-  fileInput.addEventListener('change', () => { if (fileInput.files.length) showPreview(fileInput.files[0]); });
+  fileInput.addEventListener('change', () => { if (fileInput.files!.length) showPreview(fileInput.files![0]); });
 
-  function showPreview(file) {
+  function showPreview(file: File) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      uploadPreview.src = e.target.result;
+      (uploadPreview as HTMLImageElement).src = (e.target as FileReader).result as string;
       uploadPreview.classList.remove('hidden');
       uploadZone.querySelector('.upload-placeholder')?.classList.add('hidden');
     };
     reader.readAsDataURL(file);
   }
 
-  document.getElementById('upload-form').addEventListener('submit', async (e) => {
+  document.getElementById('upload-form')!.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!fileInput.files.length) { window.showToast('Seleccioná una imagen', { type: 'info' }); return; }
+    if (!fileInput.files!.length) { window.showToast('Seleccioná una imagen', { type: 'info' }); return; }
     submitBtn.disabled = true;
     submitBtn.textContent = '⏳ Subiendo...';
     try {
       const formData = new FormData();
-      formData.append('file', fileInput.files[0]);
-      formData.append('alt', document.getElementById('img-alt').value || '');
+      formData.append('file', fileInput.files![0]);
+      formData.append('alt', (document.getElementById('img-alt') as HTMLInputElement).value || '');
       formData.append('folder', 'gallery');
 
       const token = getToken();
@@ -148,20 +148,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       if (!res.ok) throw new Error('Error al subir');
       const uploaded = await res.json();
 
-      // Agregar a gallery_images en business.json
       const data = await api('/api/site');
       const images = data.gallery_images || [];
       images.push({
         src: uploaded.imageUrl,
-        alt: document.getElementById('img-alt').value || '',
-        label: document.getElementById('img-label').value || '',
+        alt: (document.getElementById('img-alt') as HTMLInputElement).value || '',
+        label: (document.getElementById('img-label') as HTMLInputElement).value || '',
       });
       await api('/api/site', { method: 'PUT', body: JSON.stringify({ gallery_images: images }) });
 
       uploadModal.close();
       loadGallery();
       resetForm();
-    } catch (err) {
+    } catch (err: any) {
       window.showToast('Error: ' + err.message, { type: 'error' });
     } finally {
       submitBtn.disabled = false;
@@ -174,12 +173,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     uploadPreview.src = '';
     uploadPreview.classList.add('hidden');
     uploadZone.querySelector('.upload-placeholder')?.classList.remove('hidden');
-    document.getElementById('img-label').value = '';
-    document.getElementById('img-alt').value = '';
+    (document.getElementById('img-label') as HTMLInputElement).value = '';
+    (document.getElementById('img-alt') as HTMLInputElement).value = '';
   }
 
   // ── Eliminar imagen ───────────────────────────────────────────
-  async function deleteImage(index) {
+  async function deleteImage(index: number) {
     if (!confirm('¿Eliminar esta imagen de la galería?')) return;
     try {
       const data = await api('/api/site');
@@ -187,7 +186,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       images.splice(index, 1);
       await api('/api/site', { method: 'PUT', body: JSON.stringify({ gallery_images: images }) });
       loadGallery();
-    } catch (err) {
+    } catch (err: any) {
       window.showToast('Error: ' + err.message, { type: 'error' });
     }
   }

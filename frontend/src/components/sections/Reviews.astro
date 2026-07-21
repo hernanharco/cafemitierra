@@ -8,7 +8,7 @@ const { business } = Astro.props;
 import ScrollReveal from "../effects/ScrollReveal.astro";
 import StarRating from "../ui/StarRating.astro";
 
-const visibleReviews = (business.reviews || []).filter((r) => r.visible !== false);
+const visibleReviews = (business.reviews || []).filter((r: any) => r.visible !== false);
 ---
 
 <section class="py-24 px-6 bg-cream">
@@ -51,7 +51,7 @@ const visibleReviews = (business.reviews || []).filter((r) => r.visible !== fals
 
     <!-- Reviews cards -->
     <div class="space-y-4" id="reviews-list">
-      {visibleReviews.map((review, i) => (
+      {visibleReviews.map((review: any, i: number) => (
         <ScrollReveal delay={0.2 + i * 0.1}>
           <div class="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
             <div class="flex items-start justify-between mb-3">
@@ -125,10 +125,11 @@ const visibleReviews = (business.reviews || []).filter((r) => r.visible !== fals
 </section>
 
 <script>
-  async function submitReview(e) {
+  async function submitReview(e: Event) {
     e.preventDefault();
-    const btn = document.getElementById('review-submit-btn');
-    const status = document.getElementById('review-form-status');
+    const btn = document.getElementById('review-submit-btn') as HTMLButtonElement | null;
+    const status = document.getElementById('review-form-status') as HTMLElement | null;
+    if (!btn || !status) return;
     btn.disabled = true;
     status.textContent = 'Enviando...';
 
@@ -137,9 +138,9 @@ const visibleReviews = (business.reviews || []).filter((r) => r.visible !== fals
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          author: document.getElementById('review-author').value,
-          rating: Number(document.getElementById('review-rating').value),
-          text: document.getElementById('review-text').value,
+          author: (document.getElementById('review-author') as HTMLInputElement).value,
+          rating: Number((document.getElementById('review-rating') as HTMLInputElement).value),
+          text: (document.getElementById('review-text') as HTMLTextAreaElement).value,
           source: 'web',
         }),
       });
@@ -147,7 +148,7 @@ const visibleReviews = (business.reviews || []).filter((r) => r.visible !== fals
       if (!res.ok) throw new Error('Error al enviar');
 
       status.textContent = '✅ ¡Gracias! Tu reseña será revisada pronto.';
-      document.getElementById('review-form').reset();
+      (document.getElementById('review-form') as HTMLFormElement).reset();
     } catch (err) {
       status.textContent = 'Error al enviar. Intentalo de nuevo.';
     } finally {

@@ -41,7 +41,7 @@ const todayIndex = today;
             Horario
           </h3>
           <div class="space-y-3">
-            {(business.hours || []).map((h) => {
+            {(business.hours || []).map((h: any) => {
               const isToday = (business.hours || []).indexOf(h) === todayIndex;
               return (
                 <div class={`flex items-center justify-between py-2 px-4 rounded-lg transition-colors ${isToday ? 'bg-amarillo/10 border border-amarillo/20' : 'hover:bg-cream/5'}`}>

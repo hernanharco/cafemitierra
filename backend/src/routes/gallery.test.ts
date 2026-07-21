@@ -158,14 +158,16 @@ describe("Gallery Routes — /api/gallery", () => {
       const { getDb } = await import("../db/index.ts");
       const mockDb = createDbMock();
       // Mock de insert con returning
-      const mockReturning = vi.fn().mockResolvedValue([{
-        id: 3,
-        title: "",
-        alt: "Test alt",
-        featured: false,
-        imageUrl: "https://res.cloudinary.com/test/image3.jpg",
-        imagePublicId: "cafemitierra/gallery/test-id",
-      }]);
+      const mockReturning = vi.fn().mockResolvedValue([
+        {
+          id: 3,
+          title: "",
+          alt: "Test alt",
+          featured: false,
+          imageUrl: "https://res.cloudinary.com/test/image3.jpg",
+          imagePublicId: "cafemitierra/gallery/test-id",
+        },
+      ]);
       mockDb.insert = vi.fn(() => ({ values: vi.fn(() => ({ returning: mockReturning })) }));
       (getDb as ReturnType<typeof vi.fn>).mockReturnValue(mockDb);
 
