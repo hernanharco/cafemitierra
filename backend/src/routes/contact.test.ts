@@ -10,7 +10,7 @@ function createContactDbMock(
   overrides: {
     selectResult?: unknown[];
     insertResult?: unknown[];
-    deleteResult?: undefined;
+    deleteResult?: unknown[];
     updateResult?: unknown[];
   } = {},
 ) {

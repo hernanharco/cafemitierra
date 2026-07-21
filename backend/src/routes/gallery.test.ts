@@ -156,7 +156,7 @@ describe("Gallery Routes — /api/gallery", () => {
   describe("POST /api/gallery/upload (protegido)", () => {
     it("sube una imagen y la guarda en DB", async () => {
       const { getDb } = await import("../db/index.ts");
-      const mockDb = createDbMock();
+      const mockDb = createDbMock() as any;
       // Mock de insert con returning
       const mockReturning = vi.fn().mockResolvedValue([
         {

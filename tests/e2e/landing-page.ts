@@ -22,8 +22,9 @@ export class LandingPage {
 
   async verifyNavLinks(): Promise<void> {
     const links = ["Nosotros", "Servicios", "Horarios", "Galería", "Contacto"];
+    const nav = this.page.getByRole("navigation");
     for (const link of links) {
-      await expect(this.page.getByRole("link", { name: link })).toBeVisible();
+      await expect(nav.getByRole("link", { name: link })).toBeVisible();
     }
   }
 
