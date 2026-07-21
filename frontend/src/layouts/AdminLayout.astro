@@ -21,6 +21,16 @@ const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8001";
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} — Café Mi Tierra Admin</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <script is:inline define:vars={{ API_URL }}>
+      // Redirect API calls directly to backend (bypass Vercel serverless body limit)
+      const origFetch = window.fetch;
+      window.fetch = function(url, options = {}) {
+        if (typeof url === 'string' && url.startsWith('/api/') && !url.startsWith('http')) {
+          url = `${API_URL}${url}`;
+        }
+        return origFetch.call(this, url, options);
+      };
+    </script>
   </head>
   <body class="bg-zinc-50 text-zinc-900">
     <Toast />
