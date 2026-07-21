@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getPublicKey } from "../services/auth.ts";
+import { getPublicKeyUrl } from "../services/auth.ts";
 
 const router = new Hono().basePath("/api/auth");
 
@@ -12,10 +12,10 @@ router.get("/status", async (c) => {
   });
 });
 
-// ── GET /api/auth/public-key — Exponer clave pública (para debug) ──
+// ── GET /api/auth/public-key — URL de la JWK usada (debug) ──
 router.get("/public-key", async (c) => {
-  const key = await getPublicKey();
-  return c.json({ public_key: key });
+  const url = await getPublicKeyUrl();
+  return c.json({ jwks_url: url });
 });
 
 // ── POST /api/auth/dev-login — Login de desarrollo (temporal) ──

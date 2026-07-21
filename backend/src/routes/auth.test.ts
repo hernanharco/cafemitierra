@@ -32,19 +32,13 @@ describe("Auth Routes — /api/auth", () => {
   });
 
   describe("GET /api/auth/public-key", () => {
-    it("devuelve la clave pública (o vacía si no hay authCore)", async () => {
-      // Mock global fetch para que falle (no hay authCore)
-      const originalFetch = globalThis.fetch;
-      globalThis.fetch = vi.fn().mockRejectedValue(new Error("Not found"));
-
+    it("devuelve la URL del JWKS", async () => {
       const res = await app.request("/api/auth/public-key");
       expect(res.status).toBe(200);
 
       const body = await res.json();
-      expect(body).toHaveProperty("public_key");
-      expect(typeof body.public_key).toBe("string");
-
-      globalThis.fetch = originalFetch;
+      expect(body).toHaveProperty("jwks_url");
+      expect(typeof body.jwks_url).toBe("string");
     });
   });
 
