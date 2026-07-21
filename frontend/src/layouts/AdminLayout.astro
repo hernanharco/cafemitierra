@@ -34,11 +34,23 @@ const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8001";
   </head>
   <body class="bg-zinc-50 text-zinc-900">
     <Toast />
+
+    <!-- Overlay para mobile cuando el sidebar está abierto -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
     <Sidebar currentPath={currentPath} />
 
     <div class="admin-main">
       <header class="admin-header">
-        <h1 class="page-title">{title}</h1>
+        <div class="admin-header-left">
+          <!-- Hamburger (mobile) -->
+          <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Abrir menú">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+          </button>
+          <h1 class="page-title">{title}</h1>
+        </div>
         <div class="header-right">
           <span class="user-info" id="user-info">Cargando...</span>
         </div>
@@ -50,7 +62,38 @@ const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8001";
     </div>
 
     <script>
-      // Mostrar info del usuario (el middleware ya verificó el token server-side)
+      const sidebar = document.getElementById('admin-sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const toggle = document.getElementById('sidebar-toggle');
+
+      function openSidebar() {
+        sidebar?.classList.add('open');
+        overlay?.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSidebar() {
+        sidebar?.classList.remove('open');
+        overlay?.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      toggle?.addEventListener('click', openSidebar);
+      overlay?.addEventListener('click', closeSidebar);
+
+      // Cerrar sidebar al hacer clic en un link (mobile)
+      sidebar?.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth < 768) closeSidebar();
+        });
+      });
+
+      // Cerrar al hacer resize a desktop
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) closeSidebar();
+      });
+
+      // Mostrar info del usuario
       const token = document.cookie
         .split('; ')
         .find(row => row.startsWith('token='))
@@ -62,7 +105,7 @@ const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8001";
           const payload = JSON.parse(atob(token.split('.')[0]));
           userInfo.textContent = payload.email || 'Admin';
         } catch {
-          userInfo.textContent = 'Dev Admin';
+          userInfo.textContent = 'Admin';
         }
       }
     </script>
@@ -71,16 +114,22 @@ const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8001";
 
 <style is:global>
   @reference "tailwindcss";
+
+  /* ── Layout ─────────────────────────────────────────────── */
   .admin-main {
-    @apply ml-64 min-h-screen;
+    @apply ml-0 min-h-screen;
   }
 
   .admin-header {
-    @apply sticky top-0 z-30 bg-white border-b border-zinc-200 px-8 py-4 flex items-center justify-between;
+    @apply sticky top-0 z-30 bg-white border-b border-zinc-200 px-4 sm:px-8 py-4 flex items-center justify-between;
+  }
+
+  .admin-header-left {
+    @apply flex items-center gap-3;
   }
 
   .page-title {
-    @apply text-xl font-bold text-zinc-800;
+    @apply text-lg sm:text-xl font-bold text-zinc-800;
   }
 
   .header-right {
@@ -88,10 +137,63 @@ const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:8001";
   }
 
   .user-info {
-    @apply text-sm text-zinc-500;
+    @apply text-xs sm:text-sm text-zinc-500;
   }
 
   .admin-content {
-    @apply p-8;
+    @apply p-4 sm:p-8;
+  }
+
+  /* ── Hamburger button ───────────────────────────────────── */
+  .sidebar-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+
+  .sidebar-toggle:hover {
+    background: #f4f4f5;
+  }
+
+  .hamburger-line {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #52525b;
+    border-radius: 1px;
+    transition: transform 0.2s;
+  }
+
+  /* ── Overlay (mobile) ───────────────────────────────────── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 35;
+  }
+
+  .sidebar-overlay.open {
+    display: block;
+  }
+
+  /* ── Desktop: sidebar fijo con margen ───────────────────── */
+  @media (min-width: 768px) {
+    .sidebar-toggle {
+      display: none;
+    }
+
+    .admin-main {
+      @apply ml-64;
+    }
+
+    .sidebar-overlay {
+      display: none !important;
+    }
   }
 </style>

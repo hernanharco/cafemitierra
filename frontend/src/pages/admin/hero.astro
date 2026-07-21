@@ -161,7 +161,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
-      if (!uploadRes.ok) throw new Error('Error al subir imagen');
+      if (!uploadRes.ok) {
+        const errBody = await uploadRes.json().catch(() => ({ error: `HTTP ${uploadRes.status}` }));
+        throw new Error(errBody.error || `Error al subir imagen (${uploadRes.status})`);
+      }
       const uploaded = await uploadRes.json();
 
       // 2. Agregar a hero_images en business.json

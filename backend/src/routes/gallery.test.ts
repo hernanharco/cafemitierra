@@ -153,6 +153,79 @@ describe("Gallery Routes — /api/gallery", () => {
     });
   });
 
+  describe("POST /api/gallery/upload (protegido)", () => {
+    it("sube una imagen y la guarda en DB", async () => {
+      const { getDb } = await import("../db/index.ts");
+      const mockDb = createDbMock();
+      // Mock de insert con returning
+      const mockReturning = vi.fn().mockResolvedValue([{
+        id: 3,
+        title: "",
+        alt: "Test alt",
+        featured: false,
+        imageUrl: "https://res.cloudinary.com/test/image3.jpg",
+        imagePublicId: "cafemitierra/gallery/test-id",
+      }]);
+      mockDb.insert = vi.fn(() => ({ values: vi.fn(() => ({ returning: mockReturning })) }));
+      (getDb as ReturnType<typeof vi.fn>).mockReturnValue(mockDb);
+
+      const { uploadImage } = await import("../services/cloudinary.ts");
+      (uploadImage as ReturnType<typeof vi.fn>).mockResolvedValue({
+        url: "https://res.cloudinary.com/test/image3.jpg",
+        publicId: "cafemitierra/gallery/test-id",
+        width: 800,
+        height: 600,
+      });
+
+      // Simular FormData con un archivo
+      const formData = new FormData();
+      const file = new File(["fake-image-binary"], "test.jpg", { type: "image/jpeg" });
+      formData.append("file", file);
+      formData.append("alt", "Test alt");
+      formData.append("folder", "gallery");
+
+      const res = await app.request("/api/gallery/upload", {
+        method: "POST",
+        headers: { Authorization: "Bearer dev-token" },
+        body: formData,
+      });
+
+      expect(res.status).toBe(201);
+      const body = await res.json();
+      expect(body.imageUrl).toBe("https://res.cloudinary.com/test/image3.jpg");
+      expect(body.alt).toBe("Test alt");
+      expect(uploadImage).toHaveBeenCalledWith(expect.any(Buffer), "cafemitierra/gallery");
+    });
+
+    it("rechaza si no se envía archivo", async () => {
+      const formData = new FormData();
+      formData.append("alt", "Sin archivo");
+
+      const res = await app.request("/api/gallery/upload", {
+        method: "POST",
+        headers: { Authorization: "Bearer dev-token" },
+        body: formData,
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Archivo no proporcionado");
+    });
+
+    it("rechaza sin token de auth", async () => {
+      const formData = new FormData();
+      const file = new File(["data"], "test.jpg", { type: "image/jpeg" });
+      formData.append("file", file);
+
+      const res = await app.request("/api/gallery/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      expect(res.status).toBe(401);
+    });
+  });
+
   describe("DELETE /api/gallery/:id (protegido)", () => {
     it("elimina una imagen existente y su Cloudinary", async () => {
       const { getDb } = await import("../db/index.ts");

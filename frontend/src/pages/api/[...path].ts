@@ -4,6 +4,13 @@ export const prerender = false;
 
 const BACKEND_BASE = "https://api-cafemitierra.elrincondeharco.com";
 
+/**
+ * Proxy API requests al backend.
+ *
+ * IMPORTANTE: Usamos `request.arrayBuffer()` en vez de `request.text()`
+ * para NO corromper bodies multipart/form-data (upload de imágenes).
+ * `request.text()` decodifica a UTF-8 y destruye el boundary de FormData.
+ */
 async function proxy(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const backendUrl = `${BACKEND_BASE}${url.pathname}${url.search}`;
@@ -12,10 +19,15 @@ async function proxy(request: Request): Promise<Response> {
   headers.delete("host");
 
   try {
+    const body =
+      ["GET", "HEAD"].includes(request.method)
+        ? undefined
+        : await request.arrayBuffer();
+
     const response = await fetch(backendUrl, {
       method: request.method,
       headers,
-      body: ["GET", "HEAD"].includes(request.method) ? undefined : await request.text(),
+      body,
     });
 
     return new Response(response.body, {

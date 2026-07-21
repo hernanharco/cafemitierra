@@ -23,7 +23,10 @@ function isActive(href: string) {
 }
 ---
 
-<aside class="admin-sidebar">
+<aside class="admin-sidebar" id="admin-sidebar">
+  <!-- Close button (mobile) -->
+  <button id="sidebar-close" class="sidebar-close" aria-label="Cerrar menú">✕</button>
+
   <div class="sidebar-header">
     <a href="/admin" class="logo">
       <span class="logo-icon">☕</span>
@@ -61,6 +64,13 @@ function isActive(href: string) {
 </aside>
 
 <script>
+  const sidebar = document.getElementById('admin-sidebar');
+  const closeBtn = document.getElementById('sidebar-close');
+
+  closeBtn?.addEventListener('click', () => {
+    sidebar?.classList.remove('open');
+  });
+
   document.getElementById('logout-btn')?.addEventListener('click', () => {
     document.cookie = 'token=; path=/; max-age=0';
     window.location.href = '/admin/login';
@@ -69,9 +79,16 @@ function isActive(href: string) {
 
 <style is:global>
   @reference "tailwindcss";
+
+  /* ── Sidebar ────────────────────────────────────────────── */
   .admin-sidebar {
     @apply fixed left-0 top-0 h-screen w-64 bg-zinc-900 text-zinc-100 flex flex-col z-40;
   }
+
+  .sidebar-close {
+    display: none; /* hidden on desktop */
+  }
+
   .sidebar-header { @apply px-4 py-5 border-b border-zinc-800; }
   .logo { @apply flex items-center gap-3 no-underline; }
   .logo-icon { @apply text-2xl; }
@@ -87,4 +104,39 @@ function isActive(href: string) {
   .sidebar-footer { @apply border-t border-zinc-800 p-3 space-y-1; }
   .back-to-site { @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors no-underline; }
   .logout-btn { @apply w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors cursor-pointer bg-transparent border-none; }
+
+  /* ── Mobile: drawer overlay ─────────────────────────────── */
+  @media (max-width: 767px) {
+    .admin-sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+
+    .admin-sidebar.open {
+      transform: translateX(0);
+    }
+
+    .sidebar-close {
+      display: flex;
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 2rem;
+      height: 2rem;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: #a1a1aa;
+      font-size: 1.25rem;
+      cursor: pointer;
+      z-index: 50;
+      border-radius: 0.375rem;
+    }
+
+    .sidebar-close:hover {
+      color: white;
+      background: rgba(255,255,255,0.1);
+    }
+  }
 </style>

@@ -17,7 +17,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <button id="filter-unread" class="filter-btn" data-filter="unread">No leídos</button>
   </div>
 
-  <div class="table-container">
+  <!-- ===== DESKTOP: Tabla ===== -->
+  <div class="table-container hidden sm:block">
     <table class="data-table">
       <thead>
         <tr>
@@ -36,6 +37,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       </tbody>
     </table>
   </div>
+
+  <!-- ===== MOBILE: Cards ===== -->
+  <div id="messages-cards" class="sm:hidden space-y-3">
+    <p class="text-center text-zinc-400 py-8 text-sm">Cargando...</p>
+  </div>
 </AdminLayout>
 
 <script>
@@ -53,8 +59,24 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     return res.json();
   }
 
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-ES', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  }
+
   async function loadMessages(filter = 'all') {
     const tbody = document.getElementById('messages-table-body');
+    const cardsContainer = document.getElementById('messages-cards');
     try {
       const messages = await api('/api/contact');
       currentFilter = filter;
@@ -65,12 +87,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-zinc-400 py-8">No hay mensajes ${filter === 'unread' ? 'sin leer' : ''}</td></tr>`;
+        const emptyMsg = `No hay mensajes ${filter === 'unread' ? 'sin leer' : ''}`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-zinc-400 py-8">${emptyMsg}</td></tr>`;
+        cardsContainer.innerHTML = `<p class="text-center text-zinc-400 py-8 text-sm">${emptyMsg}</p>`;
         return;
       }
 
+      // ── Desktop: filas de tabla ──
       tbody.innerHTML = filtered.map(m => {
-        const created = m.createdAt ? new Date(m.createdAt).toLocaleString() : '—';
+        const created = formatDate(m.createdAt);
         return `
         <tr class="${m.read ? '' : 'bg-amber-50/50 font-medium'}">
           <td class="text-xs text-zinc-400 whitespace-nowrap">${created}</td>
@@ -95,14 +120,45 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </tr>`;
       }).join('');
 
-      tbody.querySelectorAll('.read-btn').forEach(b =>
+      // ── Mobile: cards ──
+      cardsContainer.innerHTML = filtered.map(m => {
+        const created = formatDate(m.createdAt);
+        return `
+        <div class="message-card ${m.read ? '' : 'message-card-unread'}">
+          <div class="message-card-header">
+            <div class="message-card-user">
+              <span class="message-card-name">${escapeHtml(m.name)}</span>
+              <span class="message-card-email">${escapeHtml(m.email)}</span>
+            </div>
+            <span class="message-card-date">${created}</span>
+          </div>
+          <p class="message-card-text">${escapeHtml(m.message)}</p>
+          <div class="message-card-footer">
+            <span class="${m.read ? 'badge badge-read' : 'badge badge-new'}">
+              ${m.read ? '✓ Leído' : '● Nuevo'}
+            </span>
+            <div class="action-buttons">
+              ${!m.read
+                ? `<button class="btn-icon read-btn" data-id="${m.id}" title="Marcar como leído">✓</button>`
+                : ''
+              }
+              <button class="btn-icon delete-btn" data-id="${m.id}" title="Eliminar">🗑️</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+      // Bind events (ambas vistas comparten mismas clases)
+      document.querySelectorAll('.read-btn').forEach(b =>
         b.addEventListener('click', () => markAsRead(Number(b.dataset.id)))
       );
-      tbody.querySelectorAll('.delete-btn').forEach(b =>
+      document.querySelectorAll('.delete-btn').forEach(b =>
         b.addEventListener('click', () => deleteMessage(Number(b.dataset.id)))
       );
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-8">Error: ${err.message}</td></tr>`;
+      const errorMsg = `<tr><td colspan="6" class="text-center text-red-500 py-8">Error: ${err.message}</td></tr>`;
+      tbody.innerHTML = errorMsg;
+      cardsContainer.innerHTML = `<p class="text-center text-red-500 py-8 text-sm">Error: ${err.message}</p>`;
     }
   }
 
@@ -125,12 +181,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
   }
 
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
   // Init
   document.getElementById('filter-all').addEventListener('click', () => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -147,9 +197,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 </script>
 
 <style is:global>
-  .table-container { background: white; border-radius: 0.75rem; border: 1px solid #e4e4e7; overflow: hidden; }
+  @reference "tailwindcss";
+
+  /* ── Desktop: Tabla ─────────────────────────────────────── */
+  .table-container { background: white; border-radius: 0.75rem; border: 1px solid #e4e4e7; overflow-x: auto; }
   .data-table { width: 100%; font-size: 0.875rem; }
-  .data-table th { text-align: left; padding: 0.75rem 1rem; background: #fafafa; color: #52525b; font-weight: 500; border-bottom: 1px solid #e4e4e7; }
+  .data-table th { text-align: left; padding: 0.75rem 1rem; background: #fafafa; color: #52525b; font-weight: 500; border-bottom: 1px solid #e4e4e7; white-space: nowrap; }
   .data-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f4f4f5; }
   .action-buttons { display: flex; gap: 0.25rem; }
   .btn-icon { padding: 0.375rem; border-radius: 0.375rem; cursor: pointer; background: transparent; border: none; font-size: 0.875rem; }
@@ -168,4 +221,33 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     background: var(--color-rojo, #B53B3B); color: white; border-color: var(--color-rojo, #B53B3B);
   }
   .filter-btn.active:hover { background: var(--color-rojo-dark, #8A2E2E); }
+
+  /* ── Mobile: Cards ──────────────────────────────────────── */
+  .message-card {
+    @apply bg-white rounded-xl border border-zinc-200 p-4;
+  }
+  .message-card-unread {
+    @apply border-l-4 border-l-amber-500 bg-amber-50/30;
+  }
+  .message-card-header {
+    @apply flex items-start justify-between gap-2 mb-2;
+  }
+  .message-card-user {
+    @apply flex-1 min-w-0;
+  }
+  .message-card-name {
+    @apply block text-sm font-semibold text-zinc-800;
+  }
+  .message-card-email {
+    @apply block text-xs text-zinc-400 truncate;
+  }
+  .message-card-date {
+    @apply text-xs text-zinc-400 whitespace-nowrap;
+  }
+  .message-card-text {
+    @apply text-sm text-zinc-600 mb-3 line-clamp-3;
+  }
+  .message-card-footer {
+    @apply flex items-center justify-between pt-2 border-t border-zinc-100;
+  }
 </style>
